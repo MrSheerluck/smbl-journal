@@ -6,7 +6,7 @@
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const trimmedEmail = email.trim();
     if (!EMAIL_RE.test(trimmedEmail)) {
       status = 'error';
@@ -17,10 +17,25 @@
     status = 'sending';
     errorMsg = '';
 
-    setTimeout(() => {
-      status = 'success';
-      email = '';
-    }, 900);
+    try {
+      const res = await fetch('http://localhost:8080/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: trimmedEmail }),
+      })
+      if (res.ok) {
+        status = 'success';
+        email = '';
+      } else {
+        status = 'error';
+        errorMsg = 'Failed to submit';
+      }
+    } catch (e) {
+      status = 'error';
+      errorMsg = 'Failed to submit';
+    }
 
   }
 
