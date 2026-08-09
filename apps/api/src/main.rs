@@ -4,10 +4,11 @@ mod state;
 
 use axum::{
     Router,
+    http::{Method, header::HeaderValue},
     routing::{get, post},
 };
 use state::AppState;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 
 #[tokio::main]
@@ -33,7 +34,7 @@ async fn main() {
         .route("/health", get(routes::health))
         .route("/api/waitlist", post(routes::waitlist))
         .with_state(AppState { conn })
-        .layer(CorsLayer::permissive())
+        .layer(cors_layer())
         .layer(TraceLayer::new_for_http());
 
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
@@ -54,4 +55,15 @@ fn load_env() {
             return;
         }
     }
+}
+
+fn cors_layer() -> CorsLayer {
+    let origins: Vec<HeaderValue> = std::env::var("CORS_ORIGINS")
+        .map(|s| s.split(',').filter_map(|o| o.trim().parse().ok()).collect())
+        .unwrap_or_else(|_| vec![HeaderValue::from_static("http://localhost:5173")]);
+    tracing::info!("cors origins: {origins:?}");
+    CorsLayer::new()
+        .allow_origin(AllowOrigin::list(origins))
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers(Any)
 }

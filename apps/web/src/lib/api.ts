@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:8080';
+import { env } from '$env/dynamic/public';
+
+const API_URL = env.PUBLIC_API_URL || 'http://localhost:8080';
 
 export async function joinWaitlist(email: string) {
 	const res = await fetch(`${API_URL}/api/waitlist`, {
