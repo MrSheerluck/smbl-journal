@@ -1,0 +1,9 @@
+{
+  "name": "smbl-journal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "cargo run --manifest-path apps/api/Cargo.toml"
+  }
+}

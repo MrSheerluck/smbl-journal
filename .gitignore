@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+target/
+.svelte-kit/
+.output/
+.vercel/
+.netlify/
+.wrangler/
+
+# env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# os
+.DS_Store
+Thumbs.db
+
+# misc
+*.log
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+Roadmap.md
