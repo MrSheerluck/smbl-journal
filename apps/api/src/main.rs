@@ -37,7 +37,11 @@ async fn main() {
         .layer(cors_layer())
         .layer(TraceLayer::new_for_http());
 
-    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
+    let port: u16 = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(8080);
+    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr)
         .await
         .expect("failed to bind");

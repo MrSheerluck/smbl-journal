@@ -1,0 +1,5 @@
+[build]
+context = "apps/api"
+
+[deploy]
+startCommand = "./target/release/api"
