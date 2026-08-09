@@ -1,83 +1,73 @@
-use std::sync::Arc;
+mod db;
+mod routes;
+mod state;
 
 use axum::{
-	extract::State,
-	routing::get,
-	Router,
+    Router,
+    http::{Method, header::HeaderValue},
+    routing::{get, post},
 };
-use libsql::Database;
-use serde_json::json;
-use tower_http::cors::CorsLayer;
+use state::AppState;
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tower_http::trace::TraceLayer;
-
-#[derive(Clone)]
-struct AppState {
-	db: Option<Arc<Database>>,
-}
 
 #[tokio::main]
 async fn main() {
-	load_env();
+    load_env();
 
-	tracing_subscriber::fmt()
-		.with_env_filter(
-			tracing_subscriber::EnvFilter::try_from_default_env()
-				.unwrap_or_else(|_| "api=debug,tower_http=debug".into()),
-		)
-		.init();
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "api=debug,tower_http=debug".into()),
+        )
+        .init();
 
-	let db = connect_db().await;
-	if db.is_some() {
-		tracing::info!("connected to Turso");
-	} else {
-		tracing::warn!("DATABASE_URL not set — running without database");
-	}
+    let conn = db::connect().await;
+    if let Some(conn) = &conn {
+        tracing::info!("connected to Turso");
+        db::init_schema(conn).await;
+    } else {
+        tracing::warn!("DATABASE_URL not set — running without database");
+    }
 
-	let state = AppState {
-		db: db.map(Arc::new),
-	};
+    let app = Router::new()
+        .route("/health", get(routes::health))
+        .route("/api/waitlist", post(routes::waitlist))
+        .with_state(AppState { conn })
+        .layer(cors_layer())
+        .layer(TraceLayer::new_for_http());
 
-	let app = Router::new()
-		.route("/health", get(health))
-		.with_state(state)
-		.layer(CorsLayer::permissive())
-		.layer(TraceLayer::new_for_http());
+    let port: u16 = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(8080);
+    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .expect("failed to bind");
 
-	let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
-	let listener = tokio::net::TcpListener::bind(addr)
-		.await
-		.expect("failed to bind");
-
-	tracing::info!("listening on {addr}");
-	axum::serve(listener, app).await.expect("server error");
+    tracing::info!("listening on {addr}");
+    axum::serve(listener, app).await.expect("server error");
 }
 
 fn load_env() {
-	for path in [".env", "apps/api/.env"] {
-		if std::path::Path::new(path).exists() {
-			if let Err(e) = dotenvy::from_path(path) {
-				tracing::warn!("failed to load {path}: {e}");
-			}
-			return;
-		}
-	}
+    for path in [".env", "apps/api/.env"] {
+        if std::path::Path::new(path).exists() {
+            if let Err(e) = dotenvy::from_path(path) {
+                tracing::warn!("failed to load {path}: {e}");
+            }
+            return;
+        }
+    }
 }
 
-async fn connect_db() -> Option<Database> {
-	let url = std::env::var("DATABASE_URL").ok()?;
-	let token = std::env::var("TURSO_AUTH_TOKEN").unwrap_or_default();
-	match libsql::Builder::new_remote(url, token).build().await {
-		Ok(db) => Some(db),
-		Err(e) => {
-			tracing::error!("failed to connect to database: {e}");
-			None
-		}
-	}
-}
-
-async fn health(State(state): State<AppState>) -> axum::Json<serde_json::Value> {
-	axum::Json(json!({
-		"status": "ok",
-		"db": if state.db.is_some() { "connected" } else { "unavailable" }
-	}))
+fn cors_layer() -> CorsLayer {
+    let origins: Vec<HeaderValue> = std::env::var("CORS_ORIGINS")
+        .map(|s| s.split(',').filter_map(|o| o.trim().parse().ok()).collect())
+        .unwrap_or_else(|_| vec![HeaderValue::from_static("http://localhost:5173")]);
+    tracing::info!("cors origins: {origins:?}");
+    CorsLayer::new()
+        .allow_origin(AllowOrigin::list(origins))
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers(Any)
 }
