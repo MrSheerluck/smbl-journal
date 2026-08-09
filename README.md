@@ -37,7 +37,8 @@ TURSO_AUTH_TOKEN=<token>
 
 ## Status
 
-Early development - phase 0 (scaffold + themes) done, landing + waitlist next.
+Phase 1 done: landing page with waitlist capture, wired to the API and Turso. Next: phase 2 (WorkOS auth).
+
 
 ## LICENSE
 MIT
