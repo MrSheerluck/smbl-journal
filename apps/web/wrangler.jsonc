@@ -6,5 +6,8 @@
 		"binding": "ASSETS"
 	},
 	"compatibility_date": "2026-08-09",
-	"routes": [{ "pattern": "journal.smbl.dev", "custom_domain": true }]
+	"routes": [{ "pattern": "journal.smbl.dev", "custom_domain": true }],
+	"vars": {
+		"PUBLIC_API_URL": "https://journal-api.smbl.dev"
+	}
 }
