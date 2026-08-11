@@ -1,0 +1,14 @@
+{
+	"name": "@smbl/shared",
+	"version": "0.0.0",
+	"type": "module",
+	"exports": {
+		".": "./src/crypto.ts"
+	},
+	"scripts": {
+		"test": "node --test src/*.test.ts"
+	},
+	"dependencies": {
+		"@noble/hashes": "^1.8.0"
+	}
+}
