@@ -9,6 +9,10 @@ importers:
   .: {}
 
   apps/web:
+    dependencies:
+      '@smbl/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
     devDependencies:
       '@sveltejs/adapter-cloudflare':
         specifier: ^7.2.9

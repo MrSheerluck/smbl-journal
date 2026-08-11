@@ -1,11 +1,33 @@
 <script lang="ts">
+	import { createVault, hasVault } from '$lib/vault';
+	import { onMount } from 'svelte';
+
 	let passphrase = $state('');
 	let confirm = $state('');
 	let open = $state(false);
+	let submitting = $state(false);
+	let error = $state('');
 
 	let strength = $derived(scorePassphrase(passphrase));
 	let mismatched = $derived(passphrase.length > 0 && confirm !== passphrase);
 	let canSubmit = $derived(passphrase.length > 0 && !mismatched);
+
+	onMount(() => {
+		if (hasVault()) window.location.href = '/home';
+	});
+
+	async function handleSubmit() {
+		if (!canSubmit || submitting) return;
+		submitting = true;
+		error = '';
+		try {
+			await createVault(passphrase);
+			window.location.href = '/home';
+		} catch (e) {
+			error = 'Something went wrong creating your vault. Please try again.';
+			submitting = false;
+		}
+	}
 
 	function scorePassphrase(p: string): number {
 		let s = 0;
@@ -63,7 +85,7 @@
 		</div>
 	</details>
 
-	<form class="flex flex-col gap-4" onsubmit={(e) => e.preventDefault()}>
+	<form class="flex flex-col gap-4" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
 		<label class="flex flex-col gap-1.5 text-sm">
 			<span class="font-medium text-neutral-500">Passphrase</span>
 			<input
@@ -100,12 +122,16 @@
 			<p class="text-xs text-red-500">Passphrases don't match</p>
 		{/if}
 
+		{#if error}
+			<p class="text-xs text-red-500">{error}</p>
+		{/if}
+
 		<button
 			type="submit"
-			disabled={!canSubmit}
+			disabled={!canSubmit || submitting}
 			class="mt-2 rounded-lg bg-neutral-900 px-4 py-2.5 font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
 		>
-			Create vault
+			{submitting ? 'Creating...' : 'Create vault'}
 		</button>
 	</form>
 </main>
