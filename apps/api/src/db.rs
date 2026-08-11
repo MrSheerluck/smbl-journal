@@ -35,4 +35,21 @@ pub async fn init_schema(conn: &Connection) {
     {
         tracing::error!("failed to init waitlist table: {e}");
     }
+
+    if let Err(e) = conn
+        .execute(
+            "CREATE TABLE IF NOT EXISTS users (
+        workos_id TEXT PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        kdf_salt TEXT,
+        kdf_params TEXT,
+        wrapped_vault_key TEXT,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+        )",
+            (),
+        )
+        .await
+    {
+        tracing::error!("failed to init users table: {e}");
+    }
 }
