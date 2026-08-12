@@ -24,6 +24,14 @@ pub struct CallbackQuery {
 }
 
 #[derive(Deserialize)]
+pub struct VaultPayload {
+    wrapped: String,
+    iv: String,
+    salt: String,
+    params: serde_json::Value,
+}
+
+#[derive(Deserialize)]
 struct Claims {
     sub: String,
 }
@@ -146,26 +154,17 @@ pub async fn callback(
     resp
 }
 
-pub async fn me(State(state): State<AppState>, headers: HeaderMap) -> Response {
-    let Some(cookie) = headers.get(COOKIE).and_then(|v| v.to_str().ok()) else {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(json!({"error": "no session"})),
-        )
-            .into_response();
-    };
-    let Some(token) = cookie_value(cookie, SESSION_COOKIE) else {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(json!({"error": "no session"})),
-        )
-            .into_response();
-    };
+async fn auth_user(headers: &HeaderMap) -> Option<Claims> {
+    let cookie = headers.get(COOKIE)?.to_str().ok()?;
+    let token = cookie_value(cookie, SESSION_COOKIE)?;
+    verify_access_token(&token).await
+}
 
-    let Some(claims) = verify_access_token(&token).await else {
+pub async fn me(State(state): State<AppState>, headers: HeaderMap) -> Response {
+    let Some(claims) = auth_user(&headers).await else {
         return (
             StatusCode::UNAUTHORIZED,
-            Json(json!({"error": "invalid session"})),
+            Json(json!({"error": "no session"})),
         )
             .into_response();
     };
@@ -181,6 +180,48 @@ pub async fn me(State(state): State<AppState>, headers: HeaderMap) -> Response {
         "vault_setup": vault_setup
     }))
     .into_response()
+}
+
+pub async fn save_vault(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(payload): Json<VaultPayload>,
+) -> Response {
+    let Some(claims) = auth_user(&headers).await else {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"error": "no session"})),
+        )
+            .into_response();
+    };
+    let Some(conn) = &state.conn else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"error": "db unavailable"})),
+        )
+            .into_response();
+    };
+
+    match db::save_vault(
+        conn,
+        &claims.sub,
+        &payload.wrapped,
+        &payload.iv,
+        &payload.salt,
+        &payload.params.to_string(),
+    )
+    .await
+    {
+        Ok(_) => (StatusCode::OK, Json(json!({"ok": true}))).into_response(),
+        Err(e) => {
+            tracing::error!("failed to save vault: {e}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": "failed to save vault"})),
+            )
+                .into_response()
+        }
+    }
 }
 
 pub async fn logout() -> Response {

@@ -6,7 +6,7 @@ mod state;
 use axum::{
     Router,
     http::{Method, header::HeaderValue},
-    routing::{get, post},
+    routing::{get, post, put},
 };
 use state::AppState;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
@@ -38,6 +38,7 @@ async fn main() {
         .route("/auth/callback", get(auth::callback))
         .route("/auth/logout", post(auth::logout))
         .route("/auth/me", get(auth::me))
+        .route("/auth/me/vault", put(auth::save_vault))
         .with_state(AppState { conn })
         .layer(cors_layer())
         .layer(TraceLayer::new_for_http());

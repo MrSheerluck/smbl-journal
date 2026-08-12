@@ -44,6 +44,7 @@ pub async fn init_schema(conn: &Connection) {
         kdf_salt TEXT,
         kdf_params TEXT,
         wrapped_vault_key TEXT,
+        wrapped_key_iv TEXT,
         created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
         )",
             (),
@@ -77,4 +78,22 @@ pub async fn get_user(conn: &Connection, workos_id: &str) -> Option<(String, boo
         .ok()?;
     let row = rows.next().await.ok()??;
     Some((row.get::<String>(0).ok()?, row.get::<i64>(1).ok()? == 1))
+}
+
+pub async fn save_vault(
+    conn: &Connection,
+    workos_id: &str,
+    wrapped: &str,
+    iv: &str,
+    salt: &str,
+    params: &str,
+) -> Result<(), libsql::Error> {
+    conn.execute(
+        "UPDATE users
+           SET wrapped_vault_key = ?1, wrapped_key_iv = ?2, kdf_salt = ?3, kdf_params = ?4
+           WHERE workos_id = ?5",
+        libsql::params![wrapped, iv, salt, params, workos_id],
+    )
+    .await
+    .map(|_| ())
 }
