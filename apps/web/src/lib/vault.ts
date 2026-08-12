@@ -2,19 +2,11 @@ import {
 	deriveKey,
 	generateVaultKey,
 	wrapVaultKey,
-	DEFAULT_KDF,
-	type KdfParams
+	DEFAULT_KDF
 } from '@smbl/shared';
+import { saveVault } from './api';
 
 const VAULT_KEY = 'smbl.vaultKey';
-const VAULT_META = 'smbl.vault';
-
-export interface StoredVault {
-	wrapped: string; // base64 vault key ciphertext
-	iv: string;      // base64 AES-GCM IV
-	salt: string;    // base64 Argon2id salt
-	params: KdfParams;
-}
 
 function bytesToBase64(bytes: Uint8Array): string {
 	let bin = '';
@@ -35,16 +27,16 @@ export async function createVault(passphrase: string): Promise<void> {
 	const derived = await deriveKey(passphrase, salt, DEFAULT_KDF);
 	const { iv, ciphertext } = await wrapVaultKey(vaultKey, derived);
 
+	// Cache the raw key locally (no re-prompt this session).
 	sessionStorage.setItem(VAULT_KEY, bytesToBase64(vaultKey));
-	sessionStorage.setItem(
-		VAULT_META,
-		JSON.stringify({
-			wrapped: bytesToBase64(ciphertext),
-			iv: bytesToBase64(iv),
-			salt: bytesToBase64(salt),
-			params: DEFAULT_KDF
-		} as StoredVault)
-	);
+
+	// Persist only the wrapped key + non-secret params via the BFF.
+	await saveVault({
+		wrapped: bytesToBase64(ciphertext),
+		iv: bytesToBase64(iv),
+		salt: bytesToBase64(salt),
+		params: DEFAULT_KDF
+	});
 }
 
 export function getVaultKey(): Uint8Array | null {
@@ -52,11 +44,6 @@ export function getVaultKey(): Uint8Array | null {
 	return raw ? base64ToBytes(raw) : null;
 }
 
-export function hasVault(): boolean {
-	return sessionStorage.getItem(VAULT_META) !== null;
-}
-
 export function clearVault(): void {
 	sessionStorage.removeItem(VAULT_KEY);
-	sessionStorage.removeItem(VAULT_META);
 }

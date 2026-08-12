@@ -1,8 +1,14 @@
 import type { Handle } from '@sveltejs/kit';
+import { getMe } from '$lib/server/api';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	const token = event.cookies.get('smbl.session');
 
-	// Replace with a real /auth/me call later
-	event.locals.session = { workosId: 'mock-user', email: 'you@example.com' };
+	if (token) {
+		event.locals.session = await getMe(token);
+	} else {
+		event.locals.session = null;
+	}
+
 	return resolve(event);
 };

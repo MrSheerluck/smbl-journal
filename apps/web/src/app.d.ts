@@ -4,7 +4,7 @@ declare global {
 	namespace App {
 		// interface Error {}
     interface Locals {
-      session: { workosId: string; email: string } | null;
+      session: { workos_id: string; email: string; vault_setup: boolean } | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

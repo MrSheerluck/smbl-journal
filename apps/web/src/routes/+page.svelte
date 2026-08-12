@@ -1,9 +1,10 @@
 <script lang="ts">
 	import WaitlistForm from '$lib/components/WaitlistForm.svelte';
+	import { loginUrl } from '$lib/api';
 </script>
 
 <main
-	class="flex min-h-screen flex-col items-center justify-center gap-6 bg-white px-6 text-center text-neutral-900"
+	class="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center"
 >
 	<p class="text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">smbl journal</p>
 	<h1 class="max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -14,6 +15,21 @@
 	</p>
 
 	<WaitlistForm />
+
+	<div class="flex items-center gap-5">
+		<a
+			href={loginUrl('sign-in')}
+			class="text-sm text-neutral-400 transition hover:text-neutral-900 dark:hover:text-neutral-100"
+		>
+			Sign in
+		</a>
+		<a
+			href={loginUrl('sign-up')}
+			class="text-sm text-neutral-400 transition hover:text-neutral-900 dark:hover:text-neutral-100"
+		>
+			Create account
+		</a>
+	</div>
 
 	<a
 		href="https://github.com/MrSheerluck/smbl-journal"

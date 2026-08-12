@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { createVault, hasVault } from '$lib/vault';
-	import { onMount } from 'svelte';
+	import { createVault } from '$lib/vault';
 
 	let passphrase = $state('');
 	let confirm = $state('');
@@ -11,10 +10,6 @@
 	let strength = $derived(scorePassphrase(passphrase));
 	let mismatched = $derived(passphrase.length > 0 && confirm !== passphrase);
 	let canSubmit = $derived(passphrase.length > 0 && !mismatched);
-
-	onMount(() => {
-		if (hasVault()) window.location.href = '/home';
-	});
 
 	async function handleSubmit() {
 		if (!canSubmit || submitting) return;

@@ -1,26 +1,22 @@
+use std::sync::OnceLock;
+use std::time::{Duration, Instant};
+
 use axum::{
     Json,
-    extract::{Query, State},
-    http::{
-        HeaderMap, HeaderValue, StatusCode,
-        header::{COOKIE, SET_COOKIE},
-    },
-    response::{IntoResponse, Redirect, Response},
+    extract::State,
+    http::{HeaderMap, StatusCode, header::AUTHORIZATION},
+    response::{IntoResponse, Response},
 };
 use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header};
-use rand::{Rng, distributions::Alphanumeric};
 use serde::Deserialize;
 use serde_json::json;
+use tokio::sync::RwLock;
 
 use crate::{db, state::AppState};
 
-const SESSION_COOKIE: &str = "smbl.session";
-const STATE_COOKIE: &str = "smbl.state";
-
 #[derive(Deserialize)]
-pub struct CallbackQuery {
+pub struct ExchangeRequest {
     code: String,
-    state: String,
 }
 
 #[derive(Deserialize)]
@@ -36,79 +32,68 @@ struct Claims {
     sub: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct Jwk {
     kid: String,
     n: String,
     e: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct Jwks {
     keys: Vec<Jwk>,
 }
+
+/// Cached WorkOS signing keys. Fetched lazily, re-fetched if stale.
+static JWKS: OnceLock<RwLock<Option<(Jwks, Instant)>>> = OnceLock::new();
 
 fn env(name: &str) -> String {
     std::env::var(name).expect(&format!("{name} not set"))
 }
 
-fn nonce() -> String {
-    rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(24)
-        .map(char::from)
-        .collect()
+/// Verify the WorkOS session JWT and return its claims, or `None`.
+async fn verify_access_token(token: &str) -> Option<Claims> {
+    let kid = decode_header(token).ok()?.kid?;
+    let jwks = fetch_jwks().await?;
+    let key = jwks.keys.iter().find(|k| k.kid == kid)?;
+    let dk = DecodingKey::from_rsa_components(&key.n, &key.e).ok()?;
+    let data = decode::<Claims>(token, &dk, &Validation::new(Algorithm::RS256)).ok()?;
+    Some(data.claims)
 }
 
-fn cookie_value(cookies: &str, name: &str) -> Option<String> {
-    cookies.split(';').find_map(|c| {
-        let c = c.trim();
-        let (k, v) = c.split_once('=')?;
-        (k == name).then(|| v.to_string())
-    })
-}
+async fn fetch_jwks() -> Option<Jwks> {
+    let slot = JWKS.get_or_init(|| RwLock::new(None));
 
-fn session_cookie(token: &str, max_age: i64) -> HeaderValue {
-    HeaderValue::from_str(&format!(
-        "{SESSION_COOKIE}={token}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age={max_age}"
-    ))
-    .unwrap()
-}
-
-pub async fn login() -> Response {
-    let state = nonce();
-    let url = format!(
-        "https://api.workos.com/user_management/authorize?response_type=code&client_id={}&redirect_uri={}&provider=authkit&state={}",
-        env("WORKOS_CLIENT_ID"),
-        env("WORKOS_REDIRECT_URI"),
-        state
-    );
-    let state_cookie = HeaderValue::from_str(&format!(
-        "{STATE_COOKIE}={state}; HttpOnly; Path=/; SameSite=Lax; Max-Age=600"
-    ))
-    .unwrap();
-    let mut resp = Redirect::to(&url).into_response();
-    resp.headers_mut().insert(SET_COOKIE, state_cookie);
-    resp
-}
-
-pub async fn callback(
-    State(state): State<AppState>,
-    headers: HeaderMap,
-    Query(q): Query<CallbackQuery>,
-) -> Response {
-    let valid_state = headers
-        .get(COOKIE)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|c| cookie_value(c, STATE_COOKIE))
-        .map(|s| s == q.state)
-        .unwrap_or(false);
-
-    if !valid_state {
-        tracing::warn!("state mismatch — possible CSRF");
-        return Redirect::to("/login").into_response();
+    {
+        let cached = slot.read().await;
+        if let Some((jwks, at)) = cached.as_ref() {
+            if at.elapsed() < Duration::from_secs(6 * 60 * 60) {
+                return Some(jwks.clone());
+            }
+        }
     }
 
+    let url = format!("https://api.workos.com/sso/jwks/{}", env("WORKOS_CLIENT_ID"));
+    let jwks: Jwks = reqwest::get(&url).await.ok()?.json().await.ok()?;
+    let mut w = slot.write().await;
+    *w = Some((jwks.clone(), Instant::now()));
+    Some(jwks)
+}
+
+/// Read the bearer token from an incoming request header.
+async fn auth_user(headers: &HeaderMap) -> Option<Claims> {
+    let bearer = headers.get(AUTHORIZATION)?.to_str().ok()?;
+    let token = bearer.strip_prefix("Bearer ")?;
+    verify_access_token(token).await
+}
+
+/// Exchange an authorization code for a WorkOS session.
+/// Called server-to-server by the SvelteKit BFF; the API returns the session
+/// token and user identity but never sets a cookie.
+pub async fn exchange(
+    State(state): State<AppState>,
+    Json(req): Json<ExchangeRequest>,
+) -> Response {
     let client = workos::Client::builder()
         .api_key(env("WORKOS_CLIENT_SECRET"))
         .client_id(env("WORKOS_CLIENT_ID"))
@@ -117,7 +102,7 @@ pub async fn callback(
     let result = client
         .user_management()
         .authenticate_with_code(workos::user_management::AuthenticateWithCodeParams::new(
-            q.code,
+            req.code,
         ))
         .await;
 
@@ -125,7 +110,11 @@ pub async fn callback(
         Ok(r) => r,
         Err(e) => {
             tracing::error!("workos auth failed: {e}");
-            return Redirect::to("/login").into_response();
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(json!({"error": "authentication failed"})),
+            )
+                .into_response();
         }
     };
 
@@ -147,17 +136,13 @@ pub async fn callback(
         None => false,
     };
 
-    let target = if vault_setup { "/home" } else { "/setup" };
-    let mut resp = Redirect::to(target).into_response();
-    resp.headers_mut()
-        .insert(SET_COOKIE, session_cookie(&access_token, 3600));
-    resp
-}
-
-async fn auth_user(headers: &HeaderMap) -> Option<Claims> {
-    let cookie = headers.get(COOKIE)?.to_str().ok()?;
-    let token = cookie_value(cookie, SESSION_COOKIE)?;
-    verify_access_token(&token).await
+    Json(json!({
+        "access_token": access_token,
+        "workos_id": workos_id,
+        "email": email,
+        "vault_setup": vault_setup
+    }))
+    .into_response()
 }
 
 pub async fn me(State(state): State<AppState>, headers: HeaderMap) -> Response {
@@ -222,27 +207,4 @@ pub async fn save_vault(
                 .into_response()
         }
     }
-}
-
-pub async fn logout() -> Response {
-    let clear = HeaderValue::from_str(&format!(
-        "{SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0"
-    ))
-    .unwrap();
-    let mut resp = Redirect::to("/").into_response();
-    resp.headers_mut().insert(SET_COOKIE, clear);
-    resp
-}
-
-async fn verify_access_token(token: &str) -> Option<Claims> {
-    let jwks_url = format!(
-        "https://api.workos.com/sso/jwks/{}",
-        env("WORKOS_CLIENT_ID")
-    );
-    let jwks: Jwks = reqwest::get(&jwks_url).await.ok()?.json().await.ok()?;
-    let kid = decode_header(token).ok()?.kid?;
-    let key = jwks.keys.iter().find(|k| k.kid == kid)?;
-    let dk = DecodingKey::from_rsa_components(&key.n, &key.e).ok()?;
-    let data = decode::<Claims>(token, &dk, &Validation::new(Algorithm::RS256)).ok()?;
-    Some(data.claims)
 }
