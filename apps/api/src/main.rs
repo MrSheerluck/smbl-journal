@@ -1,3 +1,4 @@
+mod auth;
 mod db;
 mod routes;
 mod state;
@@ -33,6 +34,10 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(routes::health))
         .route("/api/waitlist", post(routes::waitlist))
+        .route("/auth/login", get(auth::login))
+        .route("/auth/callback", get(auth::callback))
+        .route("/auth/logout", post(auth::logout))
+        .route("/auth/me", get(auth::me))
         .with_state(AppState { conn })
         .layer(cors_layer())
         .layer(TraceLayer::new_for_http());

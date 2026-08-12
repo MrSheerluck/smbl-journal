@@ -53,3 +53,28 @@ pub async fn init_schema(conn: &Connection) {
         tracing::error!("failed to init users table: {e}");
     }
 }
+
+pub async fn upsert_user(
+    conn: &Connection,
+    workos_id: &str,
+    email: &str,
+) -> Result<(), libsql::Error> {
+    conn.execute(
+        "INSERT INTO users (workos_id, email) VALUES (?1, ?2) ON CONFLICT(workos_id) DO UPDATE SET email = excluded.email",
+        libsql::params![workos_id, email],
+    )
+    .await
+    .map(|_| ())
+}
+
+pub async fn get_user(conn: &Connection, workos_id: &str) -> Option<(String, bool)> {
+    let mut rows = conn
+        .query(
+            "SELECT email, wrapped_vault_key IS NOT NULL FROM users WHERE workos_id = ?1",
+            libsql::params![workos_id],
+        )
+        .await
+        .ok()?;
+    let row = rows.next().await.ok()??;
+    Some((row.get::<String>(0).ok()?, row.get::<i64>(1).ok()? == 1))
+}
