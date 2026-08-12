@@ -4,9 +4,24 @@ import {
 	wrapVaultKey,
 	DEFAULT_KDF
 } from '@smbl/shared';
-import { saveVault } from './api';
 
 const VAULT_KEY = 'smbl.vaultKey';
+
+export interface VaultPayload {
+	wrapped: string;
+	iv: string;
+	salt: string;
+	params: unknown;
+}
+
+async function saveVault(payload: VaultPayload): Promise<void> {
+	const res = await fetch('/api/vault', {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload)
+	});
+	if (!res.ok) throw new Error('Failed to save vault');
+}
 
 function bytesToBase64(bytes: Uint8Array): string {
 	let bin = '';

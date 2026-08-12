@@ -1,8 +1,8 @@
 import type { Handle } from '@sveltejs/kit';
-import { getMe } from '$lib/server/api';
+import { SESSION_COOKIE, getMe } from '$lib/server/api';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const token = event.cookies.get('smbl.session');
+	const token = event.cookies.get(SESSION_COOKIE);
 
 	if (token) {
 		event.locals.session = await getMe(token);

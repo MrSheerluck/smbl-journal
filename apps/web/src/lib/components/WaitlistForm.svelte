@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { joinWaitlist } from '$lib/api';
+	import { joinWaitlist } from '$lib/waitlist';
 
 	let email = $state('');
 	let status: 'idle' | 'sending' | 'success' | 'error' = $state('idle');

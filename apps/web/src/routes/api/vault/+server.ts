@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
-import { saveVault } from '$lib/server/api';
+import type { RequestEvent } from '@sveltejs/kit';
+import { SESSION_COOKIE, saveVault } from '$lib/server/api';
 
-export async function PUT({ request, cookies }) {
-	const token = cookies.get('smbl.session');
+export async function PUT({ request, cookies }: RequestEvent) {
+	const token = cookies.get(SESSION_COOKIE);
 	if (!token) {
 		return json({ error: 'no session' }, { status: 401 });
 	}

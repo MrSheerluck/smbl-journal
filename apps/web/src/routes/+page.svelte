@@ -1,6 +1,5 @@
 <script lang="ts">
 	import WaitlistForm from '$lib/components/WaitlistForm.svelte';
-	import { loginUrl } from '$lib/api';
 </script>
 
 <main
@@ -18,13 +17,13 @@
 
 	<div class="flex items-center gap-5">
 		<a
-			href={loginUrl('sign-in')}
+			href="/login"
 			class="text-sm text-neutral-400 transition hover:text-neutral-900 dark:hover:text-neutral-100"
 		>
 			Sign in
 		</a>
 		<a
-			href={loginUrl('sign-up')}
+			href="/signup"
 			class="text-sm text-neutral-400 transition hover:text-neutral-900 dark:hover:text-neutral-100"
 		>
 			Create account

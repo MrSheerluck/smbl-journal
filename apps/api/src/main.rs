@@ -6,7 +6,7 @@ mod state;
 use axum::{
     Router,
     http::{Method, header::HeaderValue},
-    routing::{get, post, put},
+    routing::{get, post},
 };
 use state::AppState;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
@@ -34,9 +34,7 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(routes::health))
         .route("/api/waitlist", post(routes::waitlist))
-        .route("/auth/exchange", post(auth::exchange))
-        .route("/auth/me", get(auth::me))
-        .route("/auth/me/vault", put(auth::save_vault))
+        .merge(auth::routes())
         .with_state(AppState { conn })
         .layer(cors_layer())
         .layer(TraceLayer::new_for_http());
