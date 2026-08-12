@@ -17,7 +17,7 @@ const stored: Theme | null = browser
 	: null;
 
 export const theme = (() => {
-	let current: Theme = $state(stored ?? 'system');
+	let current: Theme = $state(stored ?? 'light');
 
 	media?.addEventListener('change', () => {
 		if (current === 'system') apply('system');

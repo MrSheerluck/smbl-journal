@@ -6,11 +6,9 @@
 		<meta name="text-scale" content="scale" />
 		<script>
 			(() => {
+				// Light by default; dark only when explicitly chosen.
 				const theme = localStorage.getItem('theme');
-				const dark =
-					theme === 'dark' ||
-					(!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-				if (dark) document.documentElement.classList.add('dark');
+				if (theme === 'dark') document.documentElement.classList.add('dark');
 			})();
 		</script>
 		%sveltekit.head%
