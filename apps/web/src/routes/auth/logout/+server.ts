@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { SESSION_COOKIE, revokeSession } from '$lib/server/api';
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
 	try {
@@ -14,24 +14,15 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
 }
 
 export async function POST({ cookies }) {
-	const token = cookies.get('smbl.session');
+	const token = cookies.get(SESSION_COOKIE);
 	const payload = token ? decodeJwtPayload(token) : null;
 	const sessionId = typeof payload?.sid === 'string' ? payload.sid : null;
 
-	cookies.delete('smbl.session', { path: '/' });
-	cookies.delete('smbl.state', { path: '/' });
-
 	if (sessionId) {
-		// End the session at WorkOS too, so AuthKit doesn't auto-sign-in
-		// the same account on the next attempt.
-		const webOrigin = env.WEB_ORIGIN || 'http://localhost:5173';
-		const params = new URLSearchParams({
-			session_id: sessionId,
-			return_to: `${webOrigin}/login`
-		});
-		const location = `https://api.workos.com/user_management/sessions/logout?${params.toString()}`;
-		return new Response(null, { status: 303, headers: { location } });
+		await revokeSession(sessionId);
 	}
+
+	cookies.delete(SESSION_COOKIE, { path: '/' });
 
 	return new Response(null, { status: 303, headers: { location: '/login' } });
 }

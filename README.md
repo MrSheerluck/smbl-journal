@@ -42,50 +42,66 @@ pnpm dev:api    # API on :8080
 Copy `.env.example` → `.env` in both `apps/api/` and `apps/web/` and fill in.
 
 The API needs a Turso database (`DATABASE_URL`, `TURSO_AUTH_TOKEN`). The web app needs
-`API_URL` (server-side), `WORKOS_CLIENT_ID`, `WORKOS_REDIRECT_URI`, and `SECURE_COOKIES=false`
-for local dev. In the WorkOS dashboard, set the Redirect URI to
-`http://localhost:5173/auth/callback` to match `WORKOS_REDIRECT_URI`.
+`API_URL` (server-side), `WORKOS_CLIENT_ID`, and `SECURE_COOKIES=false` for local dev.
 
-## WorkOS dashboard setup
+## Auth: embedded (self-hosted) screens
 
-Both environments (staging for dev, production for deploy) need these in
-**Applications → your app → Redirects**:
+Auth is **embedded** — login, signup, and email verification are rendered on our own
+domain (`/login`, `/signup`, `/verify-email`). The SvelteKit BFF calls the WorkOS
+User Management API (via the Rust API) directly; WorkOS never hosts the UI and no
+AuthKit/custom AuthKit domain is required. Email verification is **required**.
 
-| Setting | Local dev (staging) | Production |
-|---|---|---|
-| Redirect URIs | `http://localhost:5173/auth/callback` | `https://journal.smbl.dev/auth/callback` |
-| Initiate login URI | `http://localhost:5173/auth/login` | `https://journal.smbl.dev/auth/login` |
-| Sign-out URIs | `http://localhost:5173/login` | `https://journal.smbl.dev/login` |
-| App homepage URL | `http://localhost:5173/` | `https://journal.smbl.dev/` |
-| Sign-up URL | **leave empty** | **leave empty** |
+### Flow
 
-> The **Sign-up URL must stay empty**. If set, AuthKit bounces every signup attempt to it
-> without a code (the flow breaks). `screen_hint=sign-up` + `max_age=0` in `/auth/login`
-> handle direct signup correctly.
+- **Signup** → `POST /signup` creates the user (unverified) via WorkOS, triggers the
+  email verification one-time code, and stores a `pending_authentication_token` in an
+  `httpOnly` cookie.
+- **Verify** → `/verify-email` shows a code-entry form. Submitting the emailed code
+  exchanges it + the pending token for a session and sets the cookie.
+- **Login** → `POST /login` calls WorkOS `authenticate_with_password`, sets the
+  `smbl.session` cookie, redirects to `/home` or `/setup`. If a user's email was never
+  verified, they're routed to `/verify-email` (WorkOS emails a fresh code).
+- **Password reset** → `/forgot-password` requests a token via WorkOS (WorkOS emails
+  the reset link); `/reset-password?token=…` sets a new password via
+  `confirm_password_reset`.
+- **Logout** → revokes the WorkOS session server-side (via the Rust API) and clears
+  the cookie; no redirect to WorkOS.
 
-To host the login/signup pages on your own domain (instead of the random
-`*.authkit.app` staging domain), configure a **custom AuthKit domain** — production
-environment only: WorkOS dashboard → **Domains** → **Configure AuthKit domain** →
-`auth.smbl.dev`, then add the CNAME (on Cloudflare: **DNS-only, not proxied**).
+### WorkOS dashboard setup
+
+For each environment, in **Applications → your app → Authentication → Email**:
+
+| Setting | Required value |
+|---|---|
+| Email verification | **Required** |
+| Email verification email | **Enabled** (so WorkOS sends the one-time code) |
+
+And set the **Password reset URL** so reset links point to our domain instead of the
+hosted AuthKit page: `http://localhost:5173/reset-password` (dev) /
+`https://journal.smbl.dev/reset-password` (production).
+
+No redirect/initiate-login/sign-up URIs or custom AuthKit domains are needed — the
+browser never leaves our origin during auth.
 
 ## Production checklist (Phase 6)
 
 - **Web env** (`apps/web/.env`): `API_URL=https://api.smbl.dev`,
   `PUBLIC_API_URL=https://api.smbl.dev`, `WEB_ORIGIN=https://journal.smbl.dev`,
-  `WORKOS_CLIENT_ID=<prod client>`, `WORKOS_REDIRECT_URI=https://journal.smbl.dev/auth/callback`,
-  `SECURE_COOKIES=true`.
+  `WORKOS_CLIENT_ID=<prod client>`, `SECURE_COOKIES=true`.
 - **API env** (`apps/api/.env`): `CORS_ORIGINS=https://journal.smbl.dev`, production
   `WORKOS_CLIENT_ID`/`WORKOS_CLIENT_SECRET`, Turso production DB.
-- **WorkOS dashboard**: values from the table above + custom AuthKit domain (`auth.smbl.dev`).
+- **WorkOS dashboard**: set email verification to **Required** and the email
+  verification email to **Enabled**. No AuthKit/custom domain or redirect URIs.
 - **DNS**: `journal.smbl.dev` → Cloudflare Worker (already in `wrangler.jsonc`);
-  `api.smbl.dev` → Hetzner VPS (Caddy TLS); `auth.smbl.dev` → CNAME to WorkOS (DNS-only).
+  `api.smbl.dev` → Hetzner VPS (Caddy TLS).
 - **HTTPS everywhere** — WorkOS rejects `http` redirect URIs in production.
 
 ## Status
 
 **Done:**
-- Phases 0–2: workspace, landing + waitlist, full WorkOS auth via the BFF (signup / login /
-  email-confirmation / password-reset hosted by WorkOS; logout also ends the WorkOS session).
+- Phases 0–2: workspace, landing + waitlist, full WorkOS auth via the BFF (self-hosted
+  signup / login / email-verification / password-reset; logout also revokes the WorkOS
+  session server-side).
 - Phase 3 core: client-side vault setup — first login redirects to `/setup` (passphrase creation,
   entropy meter, E2EE explainer), the wrapped vault key is persisted via the BFF, and
   `/home` is a guarded blank page. Returning users skip setup (`/setup` ↔ `/home` routing by

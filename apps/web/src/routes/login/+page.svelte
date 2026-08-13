@@ -1,28 +1,40 @@
 <script lang="ts">
-	import { loginUrl } from '$lib/api';
+	import { page } from '$app/state';
+	import AuthShell from '$lib/components/ui/AuthShell.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import TextField from '$lib/components/ui/TextField.svelte';
+
+	let { form } = $props();
 </script>
 
-<main
-	class="flex min-h-screen w-full flex-col items-center justify-center gap-6 px-6 text-center"
->
-	<p class="text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">smbl journal</p>
-	<h1 class="max-w-md text-3xl font-semibold tracking-tight">a private place to write.</h1>
-	<p class="max-w-sm text-sm text-neutral-500">
-		Your journal is encrypted end to end.
-	</p>
+<AuthShell title="welcome back" subtitle="Sign in to open your private journal.">
+	<form method="POST" class="flex flex-col gap-4">
+		<TextField label="Email" name="email" type="email" autocomplete="email" value={form?.email ?? ''} required />
+		<TextField label="Password" name="password" type="password" autocomplete="current-password" required />
 
-	<div class="flex w-full max-w-xs flex-col gap-2">
+		{#if page.url.searchParams.get('reset') === '1'}
+			<p class="text-xs text-emerald-600 dark:text-emerald-400">
+				Your password was reset. Sign in with your new password.
+			</p>
+		{/if}
+		<FormError message={form?.error} />
+
+		<Button class="mt-2">Sign in</Button>
+	</form>
+
+	<div class="flex items-center justify-between text-sm text-neutral-500">
 		<a
-			href={loginUrl('sign-in')}
-			class="rounded-lg bg-neutral-900 px-5 py-2.5 font-medium text-white transition hover:bg-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+			href="/forgot-password"
+			class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
 		>
-			Sign in
+			Forgot password?
 		</a>
 		<a
-			href={loginUrl('sign-up')}
-			class="rounded-lg border border-neutral-300 px-5 py-2.5 font-medium text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+			href="/signup"
+			class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
 		>
-			Create account
+			Create an account
 		</a>
 	</div>
-</main>
+</AuthShell>
