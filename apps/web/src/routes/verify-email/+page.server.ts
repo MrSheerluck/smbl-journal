@@ -14,28 +14,20 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	const token = url.searchParams.get('pending_authentication_token') ?? '';
 	const hasPending = Boolean(cookies.get(PENDING_COOKIE));
 
-	// Verification-link mode: WorkOS redirected here with a code + pending token.
+	// Link-mode: WorkOS redirected here with code + token. No fetch in `load`
+	// (that trips the SSR eager-fetch guard) — the page auto-submits a form that
+	// runs the verification in the action below.
 	if (code && token) {
-		const result = await verifyEmail(code, token);
-		if ('access_token' in result) {
-			setSessionCookie(cookies, result);
-			throw redirect(303, result.vault_setup ? '/home' : '/setup');
-		}
-		const err = result as ApiError;
-		return {
-			status: 'error' as const,
-			email,
-			error: err.message || 'We couldn\'t verify your email. The link may have expired.'
-		};
+		return { status: 'verify' as const, email };
 	}
 
 	// One-time-code mode: we hold a pending token from signup; show a code form.
 	if (hasPending) {
-		return { status: 'code' as const, email, error: null };
+		return { status: 'code' as const, email };
 	}
 
 	// Just signed up; pending token not yet set (or expired) — tell them to check email.
-	return { status: 'check-email' as const, email, error: null };
+	return { status: 'check-email' as const, email };
 };
 
 export const actions: Actions = {
@@ -43,7 +35,8 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const code = String(data.get('code') ?? '').trim();
 		const email = String(data.get('email') ?? '').trim();
-		const pendingToken = cookies.get(PENDING_COOKIE);
+		// Link-mode carries the token in the form; code-mode reads it from the cookie.
+		const pendingToken = String(data.get('token') ?? '').trim() || cookies.get(PENDING_COOKIE) || '';
 
 		if (!code) return fail(400, { email, error: 'Enter the code from your email.' });
 		if (!pendingToken) {

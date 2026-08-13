@@ -1,13 +1,35 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import AuthShell from '$lib/components/ui/AuthShell.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 
 	let { form, data } = $props();
+
+	onMount(() => {
+		if (data.status === 'verify') {
+			(document.getElementById('verify-form') as HTMLFormElement | null)?.submit();
+		}
+	});
 </script>
 
-{#if data.status === 'code'}
+{#if data.status === 'verify'}
+	<form method="POST" id="verify-form">
+		<input type="hidden" name="code" value={page.url.searchParams.get('code') ?? ''} />
+		<input
+			type="hidden"
+			name="token"
+			value={page.url.searchParams.get('pending_authentication_token') ?? ''}
+		/>
+		<input type="hidden" name="email" value={data.email} />
+	</form>
+
+	<AuthShell eyebrow="verify your email" title="verifying…">
+		<p class="text-center text-sm text-neutral-500">Confirming your email and opening your journal.</p>
+	</AuthShell>
+{:else if data.status === 'code'}
 	<AuthShell
 		eyebrow="verify your email"
 		title="enter the code"
@@ -59,20 +81,6 @@
 					class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
 				>
 					Sign up again
-				</a>
-			</p>
-		</div>
-	</AuthShell>
-{:else if data.status === 'error'}
-	<AuthShell eyebrow="verify your email" title="that didn't work">
-		<div class="text-center">
-			<FormError message={data.error} />
-			<p class="mt-4 text-sm">
-				<a
-					href="/signup"
-					class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
-				>
-					Try signing up again
 				</a>
 			</p>
 		</div>
