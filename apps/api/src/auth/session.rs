@@ -13,7 +13,6 @@ use super::fetch_jwks;
 use super::requests::{Claims, RevokeSessionRequest, VaultPayload};
 use super::workos_client;
 
-/// Verify the WorkOS session JWT and return its claims, or `None`.
 async fn verify_access_token(token: &str) -> Option<Claims> {
     let kid = decode_header(token).ok()?.kid?;
     let jwks = fetch_jwks().await?;
@@ -23,7 +22,6 @@ async fn verify_access_token(token: &str) -> Option<Claims> {
     Some(data.claims)
 }
 
-/// Read the bearer token from an incoming request header.
 async fn auth_user(headers: &HeaderMap) -> Option<Claims> {
     let bearer = headers.get(AUTHORIZATION)?.to_str().ok()?;
     let token = bearer.strip_prefix("Bearer ")?;
@@ -94,9 +92,6 @@ pub async fn save_vault(
     }
 }
 
-/// Revoke a WorkOS session server-side (used by logout). Idempotent: returns
-/// success even if the session is already gone, so the BFF always clears the
-/// cookie.
 pub async fn logout(Json(req): Json<RevokeSessionRequest>) -> Response {
     let result = workos_client()
         .user_management()

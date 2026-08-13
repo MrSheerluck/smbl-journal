@@ -74,7 +74,6 @@ export async function revokeSession(sessionId: string): Promise<void> {
 	try {
 		await postJson('/auth/logout', { session_id: sessionId });
 	} catch {
-		// Best-effort: the BFF always clears the cookie regardless.
 	}
 }
 

@@ -42,7 +42,6 @@ pub struct VaultPayload {
     pub params: serde_json::Value,
 }
 
-/// Claims present in a WorkOS session JWT.
 #[derive(Deserialize)]
 pub struct Claims {
     pub sub: String,

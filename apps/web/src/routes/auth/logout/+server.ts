@@ -18,8 +18,6 @@ export async function POST({ cookies }) {
 	const payload = token ? decodeJwtPayload(token) : null;
 	const sessionId = typeof payload?.sid === 'string' ? payload.sid : null;
 
-	// End the session at WorkOS server-side (so a stale token can't be reused),
-	// then clear the cookie. Best-effort: the cookie is always cleared.
 	if (sessionId) {
 		await revokeSession(sessionId);
 	}

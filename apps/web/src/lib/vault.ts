@@ -42,10 +42,8 @@ export async function createVault(passphrase: string): Promise<void> {
 	const derived = await deriveKey(passphrase, salt, DEFAULT_KDF);
 	const { iv, ciphertext } = await wrapVaultKey(vaultKey, derived);
 
-	// Cache the raw key locally (no re-prompt this session).
 	sessionStorage.setItem(VAULT_KEY, bytesToBase64(vaultKey));
 
-	// Persist only the wrapped key + non-secret params via the BFF.
 	await saveVault({
 		wrapped: bytesToBase64(ciphertext),
 		iv: bytesToBase64(iv),

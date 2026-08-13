@@ -21,8 +21,6 @@ export const actions: Actions = {
 		const result = await signup(email, password);
 
 		if ('ok' in result) {
-			// Hold the pending token so /verify-email can complete the signup
-			// when the user submits the one-time code from the email.
 			setPendingCookie(cookies, result.pending_authentication_token);
 			throw redirect(303, `/verify-email?email=${encodeURIComponent(email)}`);
 		}

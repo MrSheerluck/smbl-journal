@@ -27,8 +27,6 @@ export const actions: Actions = {
 
 		const err = result as ApiError & { pending_authentication_token?: string };
 
-		// Account exists but the email was never verified — a verification code
-		// was just emailed; hold the pending token and route to the code form.
 		if (err.error === 'email_verification_required' && err.pending_authentication_token) {
 			setPendingCookie(cookies, err.pending_authentication_token);
 			throw redirect(303, `/verify-email?email=${encodeURIComponent(email)}`);

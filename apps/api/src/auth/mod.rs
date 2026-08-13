@@ -24,7 +24,6 @@ use requests::Jwks;
 use session::{logout, me, save_vault};
 use signup::{signup, verify_email};
 
-/// Build the router for every `/auth/*` route.
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/auth/password", post(password))
@@ -48,8 +47,6 @@ fn workos_client() -> workos::Client {
         .build()
 }
 
-/// Turn a successful WorkOS authentication into the session payload the BFF
-/// stores as a cookie. Upserts the user and reports whether the vault exists.
 async fn session_response(
     state: &AppState,
     resp: &workos::models::AuthenticateResponse,
@@ -81,8 +78,6 @@ async fn session_response(
     .into_response()
 }
 
-/// Map a WorkOS SDK error to a JSON error response, preserving the WorkOS
-/// `code` so the BFF can show the right message (e.g. "email not verified").
 fn workos_error(err: &workos::Error) -> Response {
     tracing::error!("workos auth failed: {err}");
     let code = err.code().unwrap_or("authentication failed").to_string();
@@ -97,8 +92,6 @@ fn workos_error(err: &workos::Error) -> Response {
         .into_response()
 }
 
-/// Pull the `pending_authentication_token` out of a WorkOS error body. It's
-/// present on `email_verification_required` (and other challenge) errors.
 fn pending_token_from_error(err: &workos::Error) -> Option<String> {
     let body = err.api()?.raw_body.clone();
     let value: serde_json::Value = serde_json::from_slice(&body).ok()?;
@@ -108,8 +101,6 @@ fn pending_token_from_error(err: &workos::Error) -> Option<String> {
         .map(|s| s.to_string())
 }
 
-/// Cached WorkOS signing keys, used to verify session JWTs. Fetched lazily and
-/// re-fetched once stale.
 static JWKS: OnceLock<RwLock<Option<(Jwks, Instant)>>> = OnceLock::new();
 
 async fn fetch_jwks() -> Option<Jwks> {

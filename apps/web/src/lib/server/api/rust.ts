@@ -13,10 +13,6 @@ interface RequestOptions {
 	token?: string;
 }
 
-/**
- * Thin client for the Rust API. All calls are server-to-server from the BFF.
- * Returns `ApiError` on failure so callers can surface the WorkOS error code.
- */
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T | ApiError> {
 	const headers: Record<string, string> = { 'content-type': 'application/json' };
 	if (opts.token) headers.authorization = `Bearer ${opts.token}`;

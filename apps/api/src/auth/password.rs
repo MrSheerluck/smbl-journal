@@ -11,8 +11,6 @@ use crate::state::AppState;
 use super::requests::PasswordRequest;
 use super::{pending_token_from_error, session_response, workos_client, workos_error};
 
-/// Embedded email/password login. Exchanges the credentials for a WorkOS
-/// session and returns it for the BFF to store in a cookie.
 pub async fn password(State(state): State<AppState>, Json(req): Json<PasswordRequest>) -> Response {
     let result = workos_client()
         .user_management()
@@ -26,8 +24,6 @@ pub async fn password(State(state): State<AppState>, Json(req): Json<PasswordReq
 
     match result {
         Ok(r) => session_response(&state, &r).await,
-        // An unverified user can't sign in yet. WorkOS issues a pending token
-        // (and sends a one-time code); route them to /verify-email.
         Err(e) if e.code() == Some("email_verification_required") => {
             match pending_token_from_error(&e) {
                 Some(token) => (

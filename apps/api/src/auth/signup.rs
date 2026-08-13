@@ -11,9 +11,6 @@ use crate::state::AppState;
 use super::requests::{SignupRequest, VerifyEmailRequest};
 use super::{pending_token_from_error, session_response, workos_client, workos_error};
 
-/// Embedded signup. Creates the user (unverified), triggers the email
-/// verification one-time code, and returns a `pending_authentication_token`
-/// that the BFF stores until the user submits their code at `/verify-email`.
 pub async fn signup(State(_state): State<AppState>, Json(req): Json<SignupRequest>) -> Response {
     let client = workos_client();
     let um = client.user_management();
@@ -23,17 +20,13 @@ pub async fn signup(State(_state): State<AppState>, Json(req): Json<SignupReques
         password: req.password.clone(),
     });
 
-    let user = match um
+    if let Err(e) = um
         .create_user(workos::user_management::CreateUserParams::new(body))
         .await
     {
-        Ok(u) => u,
-        Err(e) => return workos_error(&e),
-    };
+        return workos_error(&e);
+    }
 
-    // Authenticating an unverified user yields the email-verification-required
-    // error carrying the pending token (and triggers the one-time code email
-    // when WorkOS's email verification email setting is enabled).
     let pending_token = match um
         .authenticate_with_password(workos::user_management::AuthenticateWithPasswordParams::new(
             req.email,
@@ -44,17 +37,6 @@ pub async fn signup(State(_state): State<AppState>, Json(req): Json<SignupReques
         Ok(_) => None,
         Err(e) => pending_token_from_error(&e),
     };
-
-    // Guarantee delivery of the verification code regardless of the email
-    // setting (idempotent — WorkOS won't resend if one was already sent).
-    if let Err(e) = um.send_verification_email(&user.id).await {
-        tracing::error!("failed to send verification email: {e}");
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({ "error": "verification_email_failed", "message": "account created but we couldn't send the verification email" })),
-        )
-            .into_response();
-    }
 
     match pending_token {
         Some(token) => {
@@ -69,9 +51,6 @@ pub async fn signup(State(_state): State<AppState>, Json(req): Json<SignupReques
     }
 }
 
-/// Complete a signup by exchanging the emailed verification `code` for a
-/// session (via the `pending_authentication_token` that WorkOS redirects to
-/// our `/verify-email` page with).
 pub async fn verify_email(
     State(state): State<AppState>,
     Json(req): Json<VerifyEmailRequest>,

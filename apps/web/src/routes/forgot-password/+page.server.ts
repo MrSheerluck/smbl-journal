@@ -10,9 +10,6 @@ export const actions: Actions = {
 
 		if (!email) return fail(400, { email, error: 'Enter your email.' });
 
-		// Never return the reset token to the requester — it is emailed to the
-		// account owner only. Always report success so we don't reveal which
-		// emails have accounts.
 		await requestPasswordReset(email);
 		return { sent: true, email };
 	}
