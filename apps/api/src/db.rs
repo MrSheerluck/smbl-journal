@@ -179,6 +179,34 @@ pub async fn get_entry(
     ))
 }
 
+pub async fn list_entries_range(
+    conn: &Connection,
+    user_id: &str,
+    start: &str,
+    end: &str,
+) -> Option<Vec<(String, String, String, String)>> {
+    let mut rows = conn
+        .query(
+            "SELECT id, entry_date, body_ciphertext, body_iv
+             FROM entries
+             WHERE user_id = ?1 AND entry_date BETWEEN ?2 AND ?3
+             ORDER BY entry_date ASC",
+            libsql::params![user_id, start, end],
+        )
+        .await
+        .ok()?;
+    let mut entries = Vec::new();
+    while let Ok(Some(row)) = rows.next().await {
+        entries.push((
+            row.get::<String>(0).ok()?,
+            row.get::<String>(1).ok()?,
+            row.get::<String>(2).ok()?,
+            row.get::<String>(3).ok()?,
+        ));
+    }
+    Some(entries)
+}
+
 pub async fn list_entry_dates(conn: &Connection, user_id: &str) -> Option<Vec<(String, String)>> {
     let mut rows = conn
         .query(

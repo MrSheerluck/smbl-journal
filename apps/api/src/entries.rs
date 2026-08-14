@@ -20,6 +20,8 @@ pub struct SaveEntryRequest {
 #[derive(Deserialize)]
 pub struct EntryQuery {
     pub date: Option<String>,
+    pub start: Option<String>,
+    pub end: Option<String>,
 }
 
 fn unauthorized() -> Response {
@@ -80,22 +82,50 @@ pub async fn get_entry(
     let Some(claims) = auth_user(&headers).await else {
         return unauthorized();
     };
-    let Some(date) = query.date else {
-        return list_entries(State(state), headers).await;
-    };
-    let Some(conn) = &state.conn else {
-        return unavailable();
-    };
+    if query.start.is_some() || query.end.is_some() {
+        let start = query.start.unwrap_or_default();
+        let end = query.end.unwrap_or_default();
+        let Some(conn) = &state.conn else {
+            return unavailable();
+        };
+        match db::list_entries_range(conn, &claims.sub, &start, &end).await {
+            Some(entries) => Json(
+                entries
+                    .into_iter()
+                    .map(
+                        |(id, entry_date, body_ciphertext, body_iv)| json!({
+                            "id": id,
+                            "entry_date": entry_date,
+                            "body_ciphertext": body_ciphertext,
+                            "body_iv": body_iv,
+                        }),
+                    )
+                    .collect::<Vec<_>>(),
+            )
+            .into_response(),
+            None => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": "failed to list entries"})),
+            )
+                .into_response(),
+        }
+    } else if let Some(date) = query.date {
+        let Some(conn) = &state.conn else {
+            return unavailable();
+        };
 
-    match db::get_entry(conn, &claims.sub, &date).await {
-        Some((id, entry_date, body_ciphertext, body_iv)) => Json(json!({
-            "id": id,
-            "entry_date": entry_date,
-            "body_ciphertext": body_ciphertext,
-            "body_iv": body_iv,
-        }))
-        .into_response(),
-        None => (StatusCode::NOT_FOUND, Json(json!({"error": "no entry"}))).into_response(),
+        match db::get_entry(conn, &claims.sub, &date).await {
+            Some((id, entry_date, body_ciphertext, body_iv)) => Json(json!({
+                "id": id,
+                "entry_date": entry_date,
+                "body_ciphertext": body_ciphertext,
+                "body_iv": body_iv,
+            }))
+            .into_response(),
+            None => (StatusCode::NOT_FOUND, Json(json!({"error": "no entry"}))).into_response(),
+        }
+    } else {
+        list_entries(State(state), headers).await
     }
 }
 

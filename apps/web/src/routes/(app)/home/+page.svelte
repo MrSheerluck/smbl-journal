@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { vaultStatus, unlockVault, clearVault, resetVault } from '$lib/vault';
-	import { todayLocal, loadEntry, saveEntry } from '$lib/entries';
+	import { todayLocal, loadEntry, saveEntry, prefetchSurroundingMonths } from '$lib/entries';
 	import RichTextEditor from '$lib/components/editor/RichTextEditor.svelte';
 	import ReadOnlyView from '$lib/components/editor/ReadOnlyView.svelte';
 
@@ -46,6 +46,7 @@
 
 	$effect(() => {
 		if ($vaultStatus !== 'unlocked') return;
+		void prefetchSurroundingMonths();
 		const d = selectedDate();
 		loadEntry(d)
 			.then((existing) => {

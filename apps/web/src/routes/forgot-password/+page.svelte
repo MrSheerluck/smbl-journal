@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import AuthShell from '$lib/components/ui/AuthShell.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 
 	let { form } = $props();
+
+	let submitting = $state(false);
 </script>
 
 {#if form?.sent}
@@ -31,12 +34,20 @@
 		title="forgot your password?"
 		subtitle="Enter your email and we'll send a link to reset it."
 	>
-		<form method="POST" class="flex flex-col gap-4">
+		<form
+			method="POST"
+			class="flex flex-col gap-4"
+			use:enhance={() => async ({ update }) => {
+				submitting = true;
+				await update();
+				submitting = false;
+			}}
+		>
 			<TextField label="Email" name="email" type="email" autocomplete="email" value={form?.email ?? ''} required />
 
 			<FormError message={form?.error} />
 
-			<Button class="mt-2">Send reset link</Button>
+			<Button disabled={submitting} class="mt-2">{submitting ? 'Sending\u2026' : 'Send reset link'}</Button>
 		</form>
 
 		<p class="text-center text-sm text-ink-soft">
