@@ -182,6 +182,20 @@ pub async fn get_entry(
     ))
 }
 
+pub async fn delete_entry(
+    conn: &Connection,
+    user_id: &str,
+    entry_date: &str,
+) -> Result<bool, libsql::Error> {
+    let res = conn
+        .execute(
+            "DELETE FROM entries WHERE user_id = ?1 AND entry_date = ?2",
+            libsql::params![user_id, entry_date],
+        )
+        .await?;
+    Ok(res > 0)
+}
+
 pub async fn get_vault(
     conn: &Connection,
     workos_id: &str,

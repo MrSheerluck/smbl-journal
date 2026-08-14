@@ -45,3 +45,8 @@ export async function loadEntry(date: string): Promise<string | null> {
 	const entry = (await res.json()) as Entry;
 	return decryptText(key, base64ToBytes(entry.body_iv), base64ToBytes(entry.body_ciphertext));
 }
+
+export async function deleteEntry(date: string): Promise<void> {
+	const res = await fetch(`/api/entries?date=${encodeURIComponent(date)}`, { method: 'DELETE' });
+	if (!res.ok && res.status !== 404) throw new Error('Failed to delete entry');
+}

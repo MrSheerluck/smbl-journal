@@ -103,7 +103,47 @@ pub async fn get_entry(
     }
 }
 
+pub async fn delete_entry(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Query(query): Query<EntryQuery>,
+) -> Response {
+    let Some(claims) = auth_user(&headers).await else {
+        return unauthorized();
+    };
+    let Some(date) = query.date else {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"error": "missing date"})),
+        )
+            .into_response();
+    };
+    let Some(conn) = &state.conn else {
+        return unavailable();
+    };
+
+    match db::delete_entry(conn, &claims.sub, &date).await {
+        Ok(true) => Json(json!({"ok": true})).into_response(),
+        Ok(false) => (
+            StatusCode::NOT_FOUND,
+            Json(json!({"error": "no entry"})),
+        )
+            .into_response(),
+        Err(e) => {
+            tracing::error!("failed to delete entry: {e}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": "failed to delete entry"})),
+            )
+                .into_response()
+        }
+    }
+}
+
 pub fn routes() -> axum::Router<AppState> {
     use axum::routing::post;
-    axum::Router::new().route("/entries", post(save_entry).get(get_entry))
+    axum::Router::new().route(
+        "/entries",
+        post(save_entry).get(get_entry).delete(delete_entry),
+    )
 }

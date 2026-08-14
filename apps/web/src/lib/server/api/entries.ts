@@ -1,4 +1,4 @@
-import { getJson, postJson } from './rust';
+import { getJson, postJson, deleteRequest } from './rust';
 
 export interface Entry {
 	id: string;
@@ -14,5 +14,13 @@ export async function getEntry(token: string, date: string): Promise<Entry | nul
 
 export async function saveEntry(token: string, payload: Entry): Promise<boolean> {
 	const result = await postJson<{ ok: boolean }>('/entries', payload, token);
+	return 'ok' in result && result.ok === true;
+}
+
+export async function deleteEntry(token: string, date: string): Promise<boolean> {
+	const result = await deleteRequest<{ ok: boolean }>(
+		`/entries?date=${encodeURIComponent(date)}`,
+		token
+	);
 	return 'ok' in result && result.ok === true;
 }

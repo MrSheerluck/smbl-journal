@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { vaultStatus, unlockVault, clearVault } from '$lib/vault';
-	import { todayLocal, loadEntry, saveTodayEntry } from '$lib/entries';
+	import { todayLocal, loadEntry, saveTodayEntry, deleteEntry } from '$lib/entries';
 	import RichTextEditor from '$lib/components/editor/RichTextEditor.svelte';
 
 	let passphrase = $state('');
@@ -10,8 +10,10 @@
 	let body = $state('');
 	let saving = $state(false);
 	let saved = $state(false);
+	let deleting = $state(false);
 	let loadFailed = $state(false);
 	let loadedDate = $state('');
+	let reloadVersion = $state(0);
 
 	$effect(() => {
 		if ($vaultStatus === 'unlocked') {
@@ -52,6 +54,26 @@
 			error = 'Failed to save your entry.';
 		} finally {
 			saving = false;
+		}
+	}
+
+	async function remove() {
+		if (deleting) return;
+		const confirmed = window.confirm(
+			`Delete today's entry (${todayLocal()})? This can't be undone.`
+		);
+		if (!confirmed) return;
+		deleting = true;
+		error = '';
+		try {
+			await deleteEntry(todayLocal());
+			body = '';
+			saved = false;
+			reloadVersion += 1;
+		} catch {
+			error = 'Failed to delete your entry.';
+		} finally {
+			deleting = false;
 		}
 	}
 </script>
@@ -98,22 +120,34 @@
 		<div class="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-8">
 			<div class="flex items-center justify-between">
 				<p class="text-sm text-neutral-500">Today {todayLocal()}</p>
-				<button
-					onclick={save}
-					disabled={saving}
-					class="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
-				>
-					{saving ? 'Saving...' : saved ? 'Saved' : 'Save'}
-				</button>
+				<div class="flex items-center gap-2">
+					<button
+						onclick={remove}
+						disabled={deleting}
+						class="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-200 dark:hover:border-red-800 dark:hover:bg-red-950 dark:hover:text-red-400"
+					>
+						{deleting ? 'Deleting...' : 'Delete'}
+					</button>
+					<button
+						onclick={save}
+						disabled={saving}
+						class="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+					>
+						{saving ? 'Saving...' : saved ? 'Saved' : 'Save'}
+					</button>
+				</div>
 			</div>
 			<div class="overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700">
 				<RichTextEditor
 					content={body}
-					reloadKey={loadedDate}
+					reloadKey={`${loadedDate}#${reloadVersion}`}
 					placeholder="Write what's on your mind..."
 					onChange={(md) => (body = md)}
 				/>
 			</div>
+			{#if error}
+				<p class="text-xs text-red-500">{error}</p>
+			{/if}
 			{#if loadFailed}
 				<p class="text-xs text-red-500">Couldn't load today's entry.</p>
 			{/if}

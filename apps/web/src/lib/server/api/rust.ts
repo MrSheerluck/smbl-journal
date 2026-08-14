@@ -48,3 +48,7 @@ export function putJson<T>(path: string, body: unknown, token: string): Promise<
 export function getJson<T>(path: string, token: string): Promise<T | ApiError> {
 	return request<T>(path, { token });
 }
+
+export function deleteRequest<T>(path: string, token: string): Promise<T | ApiError> {
+	return request<T>(path, { method: 'DELETE', token });
+}
