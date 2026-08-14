@@ -120,3 +120,23 @@ pub async fn save_vault(
     .await
     .map(|_| ())
 }
+
+pub async fn get_vault(
+    conn: &Connection,
+    workos_id: &str,
+) -> Option<(String, String, String, String)> {
+    let mut rows = conn
+        .query(
+            "SELECT wrapped_vault_key, wrapped_key_iv, kdf_salt, kdf_params FROM users WHERE workos_id = ?1",
+            libsql::params![workos_id],
+        )
+        .await
+        .ok()?;
+    let row = rows.next().await.ok()??;
+    Some((
+        row.get::<String>(0).ok()?,
+        row.get::<String>(1).ok()?,
+        row.get::<String>(2).ok()?,
+        row.get::<String>(3).ok()?,
+    ))
+}

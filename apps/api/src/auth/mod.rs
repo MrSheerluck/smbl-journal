@@ -8,10 +8,9 @@ use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use axum::{
-    Json,
-    Router,
+    Json, Router,
     response::{IntoResponse, Response},
-    routing::{get, post, put},
+    routing::{get, post},
 };
 use serde_json::json;
 use tokio::sync::RwLock;
@@ -21,7 +20,8 @@ use crate::{db, state::AppState};
 use password::password;
 use password_reset::{password_reset_confirm, password_reset_request};
 use requests::Jwks;
-use session::{logout, me, save_vault};
+use session::{get_vault, logout, me, save_vault};
+
 use signup::{signup, verify_email};
 
 pub fn routes() -> Router<AppState> {
@@ -33,7 +33,7 @@ pub fn routes() -> Router<AppState> {
         .route("/auth/password-reset/request", post(password_reset_request))
         .route("/auth/password-reset/confirm", post(password_reset_confirm))
         .route("/auth/me", get(me))
-        .route("/auth/me/vault", put(save_vault))
+        .route("/auth/me/vault", get(get_vault).put(save_vault))
 }
 
 fn env(name: &str) -> String {
@@ -115,7 +115,10 @@ async fn fetch_jwks() -> Option<Jwks> {
         }
     }
 
-    let url = format!("https://api.workos.com/sso/jwks/{}", env("WORKOS_CLIENT_ID"));
+    let url = format!(
+        "https://api.workos.com/sso/jwks/{}",
+        env("WORKOS_CLIENT_ID")
+    );
     let jwks: Jwks = reqwest::get(&url).await.ok()?.json().await.ok()?;
     let mut w = slot.write().await;
     *w = Some((jwks.clone(), Instant::now()));

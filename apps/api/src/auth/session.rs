@@ -108,3 +108,30 @@ pub async fn logout(Json(req): Json<RevokeSessionRequest>) -> Response {
 
     (StatusCode::OK, Json(json!({ "ok": true }))).into_response()
 }
+
+pub async fn get_vault(State(state): State<AppState>, headers: HeaderMap) -> Response {
+    let Some(claims) = auth_user(&headers).await else {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"error": "no session"})),
+        )
+            .into_response();
+    };
+    let Some(conn) = &state.conn else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"error": "db unavailable"})),
+        )
+            .into_response();
+    };
+
+    match db::get_vault(conn, &claims.sub).await {
+        Some((wrapped, iv, salt, params)) => Json(json!({
+            "wrapped": wrapped,
+            "iv": iv,
+            "salt": salt,
+            "params": serde_json::from_str::<serde_json::Value>(&params).unwrap_or(serde_json::Value::Null),
+        })).into_response(),
+        None => (StatusCode::NOT_FOUND, Json(json!({"error": "no vault"}))).into_response(),
+    }
+}
