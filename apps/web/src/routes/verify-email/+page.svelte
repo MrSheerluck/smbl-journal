@@ -27,7 +27,7 @@
 	</form>
 
 	<AuthShell eyebrow="verify your email" title="verifying…">
-		<p class="text-center text-sm text-neutral-500">Confirming your email and opening your journal.</p>
+		<p class="text-center text-sm text-ink-soft">Confirming your email and opening your journal.</p>
 	</AuthShell>
 {:else if data.status === 'code'}
 	<AuthShell
@@ -53,11 +53,11 @@
 			<Button class="mt-2">Verify</Button>
 		</form>
 
-		<p class="text-center text-sm text-neutral-500">
+		<p class="text-center text-sm text-ink-soft">
 			No email? Check your spam folder, or
 			<a
 				href="/signup"
-				class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+				class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 			>
 				sign up again
 			</a>
@@ -67,10 +67,10 @@
 {:else if data.status === 'check-email'}
 	<AuthShell eyebrow="verify your email" title="check your inbox">
 		<div class="text-center">
-			<p class="text-sm text-neutral-500">
+			<p class="text-sm text-ink-soft">
 				{#if data.email}
 					We sent a verification code to
-					<span class="font-medium text-neutral-900 dark:text-neutral-100">{data.email}</span>.
+					<span class="font-medium text-ink dark:text-[#f2f2f2]">{data.email}</span>.
 				{:else}
 					We sent a verification code to your email.
 				{/if}
@@ -78,7 +78,7 @@
 			<p class="mt-4 text-sm">
 				<a
 					href="/signup"
-					class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+					class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 				>
 					Sign up again
 				</a>

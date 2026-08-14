@@ -10,15 +10,15 @@
 {#if form?.sent}
 	<AuthShell eyebrow="reset password" title="check your inbox">
 		<div class="text-center">
-			<p class="text-sm text-neutral-500">
+			<p class="text-sm text-ink-soft">
 				If an account exists for
-				<span class="font-medium text-neutral-900 dark:text-neutral-100">{form.email}</span>,
+				<span class="font-medium text-ink dark:text-[#f2f2f2]">{form.email}</span>,
 				we sent a link to reset your password.
 			</p>
 			<p class="mt-4 text-sm">
 				<a
 					href="/login"
-					class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+					class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 				>
 					Back to sign in
 				</a>
@@ -39,10 +39,10 @@
 			<Button class="mt-2">Send reset link</Button>
 		</form>
 
-		<p class="text-center text-sm text-neutral-500">
+		<p class="text-center text-sm text-ink-soft">
 			<a
 				href="/login"
-				class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+				class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 			>
 				Back to sign in
 			</a>

@@ -137,8 +137,8 @@
 	}
 </script>
 
-<div class="rich-editor relative flex flex-col">
-	<div class="toolbar flex flex-wrap items-center gap-0.5 border-b border-rule px-2 py-1.5 dark:border-rule-dark" data-version={version}>
+<div class="rich-editor relative flex h-full min-h-0 flex-col">
+	<div class="toolbar flex shrink-0 flex-wrap items-center gap-0.5 border-b border-rule px-2 py-1.5 dark:border-rule-dark" data-version={version}>
 		<ToolButton icon="undo" label="Undo" onclick={() => run((ed) => ed.chain().undo().run())} disabled={!editor?.can().undo()} />
 		<ToolButton icon="redo" label="Redo" onclick={() => run((ed) => ed.chain().redo().run())} disabled={!editor?.can().redo()} />
 		<div class="mx-1 h-5 w-px bg-rule dark:bg-rule-dark"></div>
@@ -164,7 +164,7 @@
 		<ToolButton icon="erase" label="Clear formatting" onclick={() => run((ed) => ed.chain().unsetAllMarks().clearNodes().run())} />
 	</div>
 
-	<div bind:this={editorEl} class="tiptap focus:outline-none"></div>
+	<div bind:this={editorEl} class="tiptap editor-scroll focus:outline-none"></div>
 
 	{#if editor && isEmpty && focused}
 		<div class="slash-hint pointer-events-none absolute bottom-3 left-6 font-mono text-xs text-ink-soft dark:text-[#8b887d]">
@@ -173,7 +173,7 @@
 	{/if}
 
 	{#if editor}
-	<div bind:this={bubbleEl} class="bubble-menu pointer-events-auto flex items-center gap-0.5 rounded-xl border border-rule bg-paper p-1 shadow-xl dark:border-rule-dark dark:bg-[#20211d]" hidden>
+	<div bind:this={bubbleEl} class="bubble-menu pointer-events-auto flex items-center gap-0.5 rounded-xl border border-rule bg-paper p-1 shadow-xl dark:border-rule-dark dark:bg-[#232323]" hidden>
 			<ToolButton size="sm" icon="bold" label="Bold" onclick={() => run((ed) => ed.chain().toggleBold().run())} />
 			<ToolButton size="sm" icon="italic" label="Italic" onclick={() => run((ed) => ed.chain().toggleItalic().run())} />
 			<ToolButton size="sm" icon="strike" label="Strikethrough" onclick={() => run((ed) => ed.chain().toggleStrike().run())} />

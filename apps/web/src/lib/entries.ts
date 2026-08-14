@@ -55,6 +55,20 @@ export async function listEntryDates(): Promise<string[]> {
 	return entries.map((e) => e.entry_date).sort().reverse();
 }
 
+export async function exportPlaintext(): Promise<string> {
+	const key = getVaultKey();
+	if (!key) throw new Error('Vault is locked');
+	const dates = await listEntryDates();
+	const blocks: string[] = [];
+	for (const date of dates) {
+		const body = await loadEntry(date);
+		if (body) {
+			blocks.push(`# ${date}\n\n${body}\n`);
+		}
+	}
+	return blocks.join('\n---\n\n');
+}
+
 export async function deleteEntry(date: string): Promise<void> {
 	const res = await fetch(`/api/entries?date=${encodeURIComponent(date)}`, { method: 'DELETE' });
 	if (!res.ok && res.status !== 404) throw new Error('Failed to delete entry');

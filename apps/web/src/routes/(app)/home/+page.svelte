@@ -117,7 +117,7 @@
 	}
 </script>
 
-<main class="flex min-h-full w-full flex-col px-6 py-6 sm:px-10">
+<main class="flex h-full w-full flex-col px-6 py-6 sm:px-10">
 	<header class="flex items-center justify-between border-b border-rule pb-4 dark:border-rule-dark">
 		<p class="eyebrow text-thread">{isFuture ? 'entry for' : 'today'}</p>
 		<span class="eyebrow text-ink-soft transition-opacity" class:opacity-0={isFuture || saveStatus === 'idle'}>
@@ -144,7 +144,7 @@
 						bind:value={passphrase}
 						type="password"
 						autocomplete="current-password"
-						class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1d1e1a] dark:focus:border-thread-soft"
+						class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1b1b1b] dark:focus:border-thread-soft"
 					/>
 				</label>
 				{#if error}
@@ -159,7 +159,7 @@
 						<button
 							type="button"
 							onclick={() => (showReset = true)}
-							class="text-sm text-ink-soft underline decoration-dotted underline-offset-2 transition hover:text-ink dark:hover:text-[#e8e4da]"
+							class="text-sm text-ink-soft underline decoration-dotted underline-offset-2 transition hover:text-ink dark:hover:text-[#f2f2f2]"
 						>
 							Forgot your passphrase?
 						</button>
@@ -205,15 +205,15 @@
 			</form>
 		</div>
 	{:else}
-		<div class="flex flex-1 flex-col py-6">
-			<div class="flex flex-col">
+		<div class="flex min-h-0 flex-1 flex-col py-6">
+			<div class="flex shrink-0 flex-col">
 				<p class="eyebrow text-thread">{isFuture ? 'reading' : 'entry for'}</p>
 				<h1 class="font-display text-3xl leading-tight sm:text-4xl">{prettyDate(date)}</h1>
 			</div>
 
-			<div class="mt-5 overflow-hidden rounded-2xl border border-rule bg-paper-2/60 shadow-[0_1px_0_rgba(32,33,30,0.04)] dark:border-rule-dark dark:bg-[#1d1e1a]/60">
+			<div class="mt-5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-rule bg-paper-2/60 shadow-[0_1px_0_rgba(32,33,30,0.04)] dark:border-rule-dark dark:bg-[#1b1b1b]/60">
 				{#if isFuture}
-					<div class="px-7 py-6">
+					<div class="min-h-0 flex-1 overflow-y-auto px-7 py-6">
 						{#if body}
 							<ReadOnlyView content={body} />
 						{:else}

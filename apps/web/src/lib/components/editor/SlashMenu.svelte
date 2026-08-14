@@ -56,12 +56,12 @@
 
 <div
 	bind:this={listEl}
-	class="max-h-72 w-64 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl dark:border-neutral-700 dark:bg-neutral-900"
+	class="max-h-72 w-64 overflow-y-auto rounded-xl border border-rule bg-paper-2 p-1.5 shadow-xl dark:border-[#2c2c2c] dark:bg-[#1b1b1b]"
 	role="listbox"
 	aria-label="Insert menu"
 >
 	{#if items.length === 0}
-		<div class="px-3 py-4 text-center text-xs text-neutral-400">No results</div>
+		<div class="px-3 py-4 text-center text-xs text-ink-soft">No results</div>
 	{:else}
 		{#each items as item, i (item.title)}
 			<button
@@ -70,8 +70,8 @@
 				aria-selected={i === selected}
 				data-selected={i === selected ? 'true' : undefined}
 				class="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition"
-				class:bg-neutral-100={i === selected}
-				class:dark:bg-neutral-800={i === selected}
+				class:bg-paper-2={i === selected}
+				class:dark:bg-[#232323]={i === selected}
 				onmouseenter={() => (selected = i)}
 				onmousedown={(e) => {
 					e.preventDefault();
@@ -79,13 +79,13 @@
 				}}
 			>
 				<span
-					class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-semibold text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+					class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-rule bg-paper-2 text-xs font-semibold text-ink-soft dark:border-[#2c2c2c] dark:bg-[#232323] dark:text-ink-2"
 				>
 					{item.icon}
 				</span>
 				<span class="flex min-w-0 flex-col">
-					<span class="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">{item.title}</span>
-					<span class="truncate text-xs text-neutral-500 dark:text-neutral-400">{item.description}</span>
+					<span class="truncate text-sm font-medium text-ink dark:text-[#f2f2f2]">{item.title}</span>
+					<span class="truncate text-xs text-ink-soft dark:text-ink-soft">{item.description}</span>
 				</span>
 			</button>
 		{/each}

@@ -94,7 +94,7 @@
 			<button
 				type="button"
 				onclick={() => shift(-1)}
-				class="flex h-6 w-6 items-center justify-center rounded-md text-ink-soft transition hover:bg-paper hover:text-ink dark:hover:bg-[#2a2b27] dark:hover:text-[#e8e4da]"
+				class="flex h-6 w-6 items-center justify-center rounded-md text-ink-soft transition hover:bg-paper hover:text-ink dark:hover:bg-[#2c2c2c] dark:hover:text-[#f2f2f2]"
 				aria-label="Previous month"
 			>
 				<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -104,7 +104,7 @@
 			<button
 				type="button"
 				onclick={() => shift(1)}
-				class="flex h-6 w-6 items-center justify-center rounded-md text-ink-soft transition hover:bg-paper hover:text-ink dark:hover:bg-[#2a2b27] dark:hover:text-[#e8e4da]"
+				class="flex h-6 w-6 items-center justify-center rounded-md text-ink-soft transition hover:bg-paper hover:text-ink dark:hover:bg-[#2c2c2c] dark:hover:text-[#f2f2f2]"
 				aria-label="Next month"
 			>
 				<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -140,7 +140,7 @@
 					class:text-ink-2={!sel}
 					class:font-semibold={todayCell || sel}
 					class:hover:bg-paper-2={!sel}
-					class:dark:hover:bg-[#2a2b27]={!sel}
+					class:dark:hover:bg-[#2c2c2c]={!sel}
 				>
 					{Number(d.slice(8, 10))}
 					{#if entry}

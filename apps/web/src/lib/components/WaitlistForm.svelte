@@ -43,12 +43,12 @@
 			bind:value={email}
 			placeholder="you@example.com"
 			disabled={status === 'sending'}
-			class="w-full rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500"
+			class="w-full rounded-full border border-rule bg-paper-2 px-4 py-2 text-sm text-ink outline-none transition placeholder:text-ink-soft focus:border-ink-soft dark:border-[#2c2c2c] dark:bg-[#1b1b1b] dark:text-[#f2f2f2] dark:focus:border-thread-soft"
 		/>
 		<button
 			type="submit"
 			disabled={status === 'sending'}
-			class="shrink-0 rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition enabled:hover:bg-neutral-700 disabled:opacity-50"
+			class="shrink-0 rounded-full bg-ink px-5 py-2 text-sm font-medium text-paper transition enabled:hover:bg-ink-2 disabled:opacity-50"
 		>
 			{status === 'sending' ? 'Joining…' : 'Join the waitlist'}
 		</button>
