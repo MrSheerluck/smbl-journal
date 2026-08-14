@@ -117,7 +117,7 @@
 	}
 </script>
 
-<main class="flex min-h-full w-full flex-col px-6 py-6 sm:px-10">
+<main class="flex h-full w-full flex-col px-6 py-6 sm:px-10">
 	<header class="flex items-center justify-between border-b border-rule pb-4 dark:border-rule-dark">
 		<p class="eyebrow text-thread">{isFuture ? 'entry for' : 'today'}</p>
 		<span class="eyebrow text-ink-soft transition-opacity" class:opacity-0={isFuture || saveStatus === 'idle'}>
@@ -205,15 +205,15 @@
 			</form>
 		</div>
 	{:else}
-		<div class="flex flex-1 flex-col py-6">
-			<div class="flex flex-col">
+		<div class="flex min-h-0 flex-1 flex-col py-6">
+			<div class="flex shrink-0 flex-col">
 				<p class="eyebrow text-thread">{isFuture ? 'reading' : 'entry for'}</p>
 				<h1 class="font-display text-3xl leading-tight sm:text-4xl">{prettyDate(date)}</h1>
 			</div>
 
-			<div class="mt-5 overflow-hidden rounded-2xl border border-rule bg-paper-2/60 shadow-[0_1px_0_rgba(32,33,30,0.04)] dark:border-rule-dark dark:bg-[#1b1b1b]/60">
+			<div class="mt-5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-rule bg-paper-2/60 shadow-[0_1px_0_rgba(32,33,30,0.04)] dark:border-rule-dark dark:bg-[#1b1b1b]/60">
 				{#if isFuture}
-					<div class="px-7 py-6">
+					<div class="min-h-0 flex-1 overflow-y-auto px-7 py-6">
 						{#if body}
 							<ReadOnlyView content={body} />
 						{:else}
