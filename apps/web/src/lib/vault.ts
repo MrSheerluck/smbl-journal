@@ -103,6 +103,42 @@ export function clearVault(): void {
 	vaultStatus.set('locked');
 }
 
+export async function changePassphrase(
+	currentPassphrase: string,
+	newPassphrase: string
+): Promise<boolean> {
+	const res = await fetch('/api/vault');
+	if (!res.ok) throw new Error('No vault found');
+	const data: VaultPayload = await res.json();
+
+	const currentDerived = await deriveKey(currentPassphrase, base64ToBytes(data.salt), data.params);
+	let vaultKey: Uint8Array;
+	try {
+		vaultKey = await unwrapVaultKey(
+			currentDerived,
+			base64ToBytes(data.iv),
+			base64ToBytes(data.wrapped)
+		);
+	} catch {
+		return false;
+	}
+
+	const salt = crypto.getRandomValues(new Uint8Array(16));
+	const derived = await deriveKey(newPassphrase, salt, data.params);
+	const { iv, ciphertext } = await wrapVaultKey(vaultKey, derived);
+
+	writeStored(vaultKey);
+	vaultStatus.set('unlocked');
+
+	await saveVault({
+		wrapped: bytesToBase64(ciphertext),
+		iv: bytesToBase64(iv),
+		salt: bytesToBase64(salt),
+		params: data.params
+	});
+	return true;
+}
+
 export async function resetVault(): Promise<void> {
 	const res = await fetch('/api/vault', { method: 'DELETE' });
 	if (!res.ok) throw new Error('Failed to reset vault');
