@@ -25,10 +25,14 @@ async fn main() {
         )
         .init();
 
-    let conn = db::connect().await;
-    if let Some(conn) = &conn {
-        tracing::info!("connected to Turso");
-        db::init_schema(conn).await;
+    let db = db::connect().await;
+    if let Some(db) = &db {
+        if let Some(conn) = db::connection(db) {
+            tracing::info!("connected to Turso");
+            db::init_schema(&conn).await;
+        } else {
+            tracing::warn!("could not open database connection");
+        }
     } else {
         tracing::warn!("DATABASE_URL not set — running without database");
     }
@@ -38,7 +42,7 @@ async fn main() {
         .route("/api/waitlist", post(routes::waitlist))
         .merge(auth::routes())
         .merge(entries::routes())
-        .with_state(AppState { conn })
+        .with_state(AppState { conn: db.map(std::sync::Arc::new) })
         .layer(cors_layer())
         .layer(TraceLayer::new_for_http());
 

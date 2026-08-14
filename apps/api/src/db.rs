@@ -1,21 +1,22 @@
-use std::sync::Arc;
-
-use libsql::Connection;
+use libsql::{Connection, Database};
 
 use crate::migrations;
 
-pub async fn connect() -> Option<Arc<Connection>> {
+pub async fn connect() -> Option<Database> {
     let url = std::env::var("DATABASE_URL").ok()?;
     let token = std::env::var("TURSO_AUTH_TOKEN").unwrap_or_default();
-    let db = match libsql::Builder::new_remote(url, token).build().await {
-        Ok(db) => db,
+    match libsql::Builder::new_remote(url, token).build().await {
+        Ok(db) => Some(db),
         Err(e) => {
             tracing::error!("failed to connect to database: {e}");
-            return None;
+            None
         }
-    };
+    }
+}
+
+pub fn connection(db: &Database) -> Option<Connection> {
     match db.connect() {
-        Ok(conn) => Some(Arc::new(conn)),
+        Ok(conn) => Some(conn),
         Err(e) => {
             tracing::error!("failed to open connection: {e}");
             None

@@ -56,14 +56,14 @@ async fn session_response(
     let email = resp.user.email.clone();
     let access_token = resp.access_token.expose().to_string();
 
-    if let Some(conn) = &state.conn {
-        if let Err(e) = db::upsert_user(conn, &workos_id, &email).await {
+    if let Some(conn) = state.connection() {
+        if let Err(e) = db::upsert_user(&conn, &workos_id, &email).await {
             tracing::error!("failed to upsert user: {e}");
         }
     }
 
-    let vault_setup = match &state.conn {
-        Some(conn) => match db::get_user(conn, &workos_id).await {
+    let vault_setup = match state.connection() {
+        Some(conn) => match db::get_user(&conn, &workos_id).await {
             Some((_, setup)) => setup,
             None => false,
         },

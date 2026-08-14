@@ -37,8 +37,8 @@ pub async fn me(State(state): State<AppState>, headers: HeaderMap) -> Response {
             .into_response();
     };
 
-    let (email, vault_setup) = match &state.conn {
-        Some(conn) => db::get_user(conn, &claims.sub).await.unwrap_or_default(),
+    let (email, vault_setup) = match state.connection() {
+        Some(conn) => db::get_user(&conn, &claims.sub).await.unwrap_or_default(),
         None => (String::new(), false),
     };
 
@@ -62,7 +62,7 @@ pub async fn save_vault(
         )
             .into_response();
     };
-    let Some(conn) = &state.conn else {
+    let Some(conn) = state.connection() else {
         return (
             StatusCode::SERVICE_UNAVAILABLE,
             Json(json!({"error": "db unavailable"})),
@@ -71,7 +71,7 @@ pub async fn save_vault(
     };
 
     match db::save_vault(
-        conn,
+        &conn,
         &claims.sub,
         &payload.wrapped,
         &payload.iv,
@@ -100,7 +100,7 @@ pub async fn reset_vault(State(state): State<AppState>, headers: HeaderMap) -> R
         )
             .into_response();
     };
-    let Some(conn) = &state.conn else {
+    let Some(conn) = state.connection() else {
         return (
             StatusCode::SERVICE_UNAVAILABLE,
             Json(json!({"error": "db unavailable"})),
@@ -108,7 +108,7 @@ pub async fn reset_vault(State(state): State<AppState>, headers: HeaderMap) -> R
             .into_response();
     };
 
-    match db::reset_user(conn, &claims.sub).await {
+    match db::reset_user(&conn, &claims.sub).await {
         Ok(_) => (StatusCode::OK, Json(json!({"ok": true}))).into_response(),
         Err(e) => {
             tracing::error!("failed to reset vault: {e}");
@@ -146,7 +146,7 @@ pub async fn get_vault(State(state): State<AppState>, headers: HeaderMap) -> Res
         )
             .into_response();
     };
-    let Some(conn) = &state.conn else {
+    let Some(conn) = state.connection() else {
         return (
             StatusCode::SERVICE_UNAVAILABLE,
             Json(json!({"error": "db unavailable"})),
@@ -154,7 +154,7 @@ pub async fn get_vault(State(state): State<AppState>, headers: HeaderMap) -> Res
             .into_response();
     };
 
-    match db::get_vault(conn, &claims.sub).await {
+    match db::get_vault(&conn, &claims.sub).await {
         Some((wrapped, iv, salt, params)) => Json(json!({
             "wrapped": wrapped,
             "iv": iv,

@@ -48,12 +48,12 @@ pub async fn save_entry(
     let Some(claims) = auth_user(&headers).await else {
         return unauthorized();
     };
-    let Some(conn) = &state.conn else {
+    let Some(conn) = state.connection() else {
         return unavailable();
     };
 
     match db::save_entry(
-        conn,
+        &conn,
         &claims.sub,
         &payload.id,
         &payload.entry_date,
@@ -85,10 +85,10 @@ pub async fn get_entry(
     if query.start.is_some() || query.end.is_some() {
         let start = query.start.unwrap_or_default();
         let end = query.end.unwrap_or_default();
-        let Some(conn) = &state.conn else {
+        let Some(conn) = state.connection() else {
             return unavailable();
         };
-        match db::list_entries_range(conn, &claims.sub, &start, &end).await {
+        match db::list_entries_range(&conn, &claims.sub, &start, &end).await {
             Some(entries) => Json(
                 entries
                     .into_iter()
@@ -110,11 +110,11 @@ pub async fn get_entry(
                 .into_response(),
         }
     } else if let Some(date) = query.date {
-        let Some(conn) = &state.conn else {
+        let Some(conn) = state.connection() else {
             return unavailable();
         };
 
-        match db::get_entry(conn, &claims.sub, &date).await {
+        match db::get_entry(&conn, &claims.sub, &date).await {
             Some((id, entry_date, body_ciphertext, body_iv)) => Json(json!({
                 "id": id,
                 "entry_date": entry_date,
@@ -136,11 +136,11 @@ pub async fn list_entries(
     let Some(claims) = auth_user(&headers).await else {
         return unauthorized();
     };
-    let Some(conn) = &state.conn else {
+    let Some(conn) = state.connection() else {
         return unavailable();
     };
 
-    match db::list_entry_dates(conn, &claims.sub).await {
+    match db::list_entry_dates(&conn, &claims.sub).await {
         Some(dates) => Json(
             dates
                 .into_iter()
@@ -171,11 +171,11 @@ pub async fn delete_entry(
         )
             .into_response();
     };
-    let Some(conn) = &state.conn else {
+    let Some(conn) = state.connection() else {
         return unavailable();
     };
 
-    match db::delete_entry(conn, &claims.sub, &date).await {
+    match db::delete_entry(&conn, &claims.sub, &date).await {
         Ok(true) => Json(json!({"ok": true})).into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,

@@ -17,7 +17,7 @@ pub async fn waitlist(
     State(state): State<AppState>,
     Json(payload): Json<WaitlistPayload>,
 ) -> (StatusCode, Json<serde_json::Value>) {
-    let Some(conn) = &state.conn else {
+    let Some(conn) = state.connection() else {
         return (
             StatusCode::SERVICE_UNAVAILABLE,
             Json(json!({ "ok": false, "error": "waitlist is temporarily unavailable" })),
