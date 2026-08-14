@@ -2,11 +2,31 @@
 	import { clearVault, changePassphrase, getVaultKey } from '$lib/vault';
 	import { exportPlaintext } from '$lib/entries';
 	import { theme, type Theme } from '$lib/theme.svelte';
-	import { font, FONT_PRESETS, type FontKey } from '$lib/fonts.svelte';
+	import {
+		font,
+		entryFont,
+		FONT_PRESETS,
+		ENTRY_FONTS,
+		ENTRY_FONT_LABELS,
+		type FontKey,
+		type EntryFontKey
+	} from '$lib/fonts.svelte';
+	import { size, type SizeLevel } from '$lib/size.svelte';
 
 	let { onClose }: { onClose: () => void } = $props();
 
 	const fontKeys = Object.keys(FONT_PRESETS) as FontKey[];
+	const entryFontKeys = Object.keys(ENTRY_FONT_LABELS) as EntryFontKey[];
+
+	const sizeOptions: { value: SizeLevel; label: string }[] = [
+		{ value: 'small', label: 'S' },
+		{ value: 'medium', label: 'M' },
+		{ value: 'large', label: 'L' }
+	];
+
+	function sizeLabel(v: SizeLevel): string {
+		return v.charAt(0).toUpperCase() + v.slice(1);
+	}
 
 	const options: { value: Theme; label: string }[] = [
 		{ value: 'light', label: 'Light' },
@@ -129,7 +149,7 @@
 				</div>
 
 				<div class="mt-4 flex flex-col gap-2">
-					<p class="text-sm text-ink-2">Font</p>
+					<p class="text-sm text-ink-2">Interface font</p>
 					<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
 						{#each fontKeys as key}
 							<button
@@ -150,6 +170,71 @@
 						{/each}
 					</div>
 				</div>
+
+				<div class="mt-4 flex flex-col gap-2">
+					<p class="text-sm text-ink-2">Entry font</p>
+					<div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
+						{#each entryFontKeys as key}
+							<button
+								type="button"
+								onclick={() => (entryFont.value = key)}
+								class="flex flex-col items-center gap-1 rounded-xl border border-rule px-3.5 py-2.5 text-sm transition hover:border-ink-soft dark:border-rule-dark dark:hover:border-[#383838]"
+								class:border-thread={entryFont.value === key}
+								class:dark:border-thread-soft={entryFont.value === key}
+							>
+								<span
+									class="text-base leading-none"
+									style:font-family={key === 'auto' ? 'inherit' : ENTRY_FONTS[key]}
+								>
+									Aa
+								</span>
+								<span class="text-xs text-ink-soft">{ENTRY_FONT_LABELS[key]}</span>
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				<div class="mt-4 flex flex-col gap-2">
+					<p class="text-sm text-ink-2">Entry size</p>
+					<div class="flex rounded-full border border-rule bg-paper-2 p-0.5 dark:border-rule-dark">
+						{#each sizeOptions as option}
+							<button
+								type="button"
+								onclick={() => (size.entry = option.value)}
+								class="flex-1 rounded-full px-3.5 py-1.5 text-sm transition"
+								class:bg-ink={size.entry === option.value}
+								class:text-paper={size.entry === option.value}
+								class:text-ink-soft={size.entry !== option.value}
+								class:dark:bg-[#f2f2f2]={size.entry === option.value}
+								class:dark:text-[#141414]={size.entry === option.value}
+							>
+								{option.label}
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				<div class="mt-4 flex flex-col gap-2">
+					<p class="text-sm text-ink-2">Interface size</p>
+					<div class="flex rounded-full border border-rule bg-paper-2 p-0.5 dark:border-rule-dark">
+						{#each sizeOptions as option}
+							<button
+								type="button"
+								onclick={() => (size.ui = option.value)}
+								class="flex-1 rounded-full px-3.5 py-1.5 text-sm transition"
+								class:bg-ink={size.ui === option.value}
+								class:text-paper={size.ui === option.value}
+								class:text-ink-soft={size.ui !== option.value}
+								class:dark:bg-[#f2f2f2]={size.ui === option.value}
+								class:dark:text-[#141414]={size.ui === option.value}
+							>
+								{option.label}
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				<p class="mt-3 text-xs text-ink-soft">Current: entry {sizeLabel(size.entry)} · interface {sizeLabel(size.ui)}</p>
 			</div>
 
 			<div class="my-5 h-px bg-rule dark:bg-rule-dark"></div>

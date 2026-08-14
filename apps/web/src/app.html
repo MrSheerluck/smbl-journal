@@ -27,6 +27,22 @@
 				s.setProperty('--font-display', p[0]);
 				s.setProperty('--font-serif', p[1]);
 				s.setProperty('--font-mono', p[2]);
+
+				const entryFonts = {
+					serif: "'Newsreader', Georgia, serif",
+					classic: "'Source Serif 4', Georgia, serif",
+					typewriter: "'Courier Prime', 'Courier New', monospace",
+					handwritten: "'Kalam', 'Comic Sans MS', cursive"
+				};
+				const eKey = localStorage.getItem('entry-font');
+				if (eKey && entryFonts[eKey]) s.setProperty('--entry-font', entryFonts[eKey]);
+
+				let size = {};
+				try { size = JSON.parse(localStorage.getItem('size') || '{}'); } catch (e) {}
+				const uiScale = { small: 0.9, medium: 1, large: 1.1 }[size.ui || 'medium'];
+				const entryScale = { small: 0.85, medium: 1, large: 1.2 }[size.entry || 'medium'];
+				document.documentElement.style.fontSize = (uiScale * 100) + '%';
+				document.documentElement.style.setProperty('--entry-scale', String(entryScale));
 			})();
 		</script>
 		%sveltekit.head%

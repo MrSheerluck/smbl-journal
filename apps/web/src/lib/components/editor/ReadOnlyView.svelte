@@ -28,8 +28,8 @@
 
 <style>
 	.read-only {
-		font-family: var(--font-serif);
-		font-size: 1.0625rem;
+		font-family: var(--entry-font, var(--font-serif));
+		font-size: calc(1.0625rem * var(--entry-scale, 1));
 		line-height: 1.75;
 		color: var(--color-ink);
 	}
