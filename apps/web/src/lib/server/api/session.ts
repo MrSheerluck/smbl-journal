@@ -29,3 +29,8 @@ export async function resetVault(token: string): Promise<boolean> {
 	const result = await deleteRequest<{ ok: boolean }>('/auth/me/vault', token);
 	return 'ok' in result && result.ok === true;
 }
+
+export async function deleteAccount(token: string): Promise<boolean> {
+	const result = await deleteRequest<{ ok: boolean }>('/auth/me', token);
+	return 'ok' in result && result.ok === true;
+}

@@ -121,6 +121,51 @@ pub async fn reset_vault(State(state): State<AppState>, headers: HeaderMap) -> R
     }
 }
 
+pub async fn delete_account(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Response {
+    let Some(claims) = auth_user(&headers).await else {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"error": "no session"})),
+        )
+            .into_response();
+    };
+    let Some(conn) = state.connection() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"error": "db unavailable"})),
+        )
+            .into_response();
+    };
+
+    if let Err(e) = workos_client()
+        .user_management()
+        .delete_user(&claims.sub)
+        .await
+    {
+        tracing::error!("workos user deletion failed: {e}");
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({"error": "failed to delete account"})),
+        )
+            .into_response();
+    }
+
+    match db::delete_account(&conn, &claims.sub).await {
+        Ok(_) => (StatusCode::OK, Json(json!({"ok": true}))).into_response(),
+        Err(e) => {
+            tracing::error!("failed to delete account data: {e}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": "failed to delete account"})),
+            )
+                .into_response()
+        }
+    }
+}
+
 pub async fn logout(Json(req): Json<RevokeSessionRequest>) -> Response {
     let result = workos_client()
         .user_management()
