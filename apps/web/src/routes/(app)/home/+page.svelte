@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { vaultStatus, unlockVault, clearVault, resetVault } from '$lib/vault';
-	import { todayLocal, loadEntry, saveEntry } from '$lib/entries';
+	import { todayLocal, loadEntry, saveEntry, prefetchSurroundingMonths } from '$lib/entries';
 	import RichTextEditor from '$lib/components/editor/RichTextEditor.svelte';
 	import ReadOnlyView from '$lib/components/editor/ReadOnlyView.svelte';
 
@@ -46,6 +46,7 @@
 
 	$effect(() => {
 		if ($vaultStatus !== 'unlocked') return;
+		void prefetchSurroundingMonths();
 		const d = selectedDate();
 		loadEntry(d)
 			.then((existing) => {
@@ -164,29 +165,34 @@
 							Forgot your passphrase?
 						</button>
 					{:else}
-						<div class="flex flex-col gap-2.5 rounded-xl border border-[#e0c4bc] bg-[#fbf3f0] p-3.5 dark:border-[#5a3c33] dark:bg-[#241b17]">
-							<p class="text-sm leading-relaxed text-[#7a3b2c] dark:text-[#e0a794]">
+						<div class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-2/60 p-4 dark:border-rule-dark dark:bg-[#1b1b1b]/60">
+							<div class="flex flex-col gap-1">
+								<p class="eyebrow text-thread">start a new vault</p>
+								<h2 class="font-display text-xl leading-tight">Fresh start.</h2>
+							</div>
+							<p class="text-sm leading-relaxed text-ink-soft">
 								Starting a new vault is irreversible. Your current passphrase is the only key to your
 								existing entries — without it, they cannot be recovered. Resetting will
-								<strong>permanently delete</strong> every entry and begin a fresh journal.
+								<strong class="text-ink dark:text-[#f2f2f2]">permanently delete</strong> every entry and
+								begin a fresh journal.
 							</p>
 							<label class="flex flex-col gap-1.5 text-sm">
-								<span class="font-medium text-[#7a3b2c] dark:text-[#e0a794]">Type DELETE to confirm</span>
+								<span class="font-medium text-ink-soft">Type DELETE to confirm</span>
 								<input
 									bind:value={resetConfirm}
 									type="text"
 									autocomplete="off"
-									class="rounded-xl border border-[#e0c4bc] bg-transparent px-3.5 py-2.5 text-sm outline-none transition focus:border-[#a54a38] dark:border-[#5a3c33] dark:focus:border-[#e0a794]"
+									class="rounded-lg border border-rule bg-transparent px-3 py-2.5 text-sm outline-none transition focus:border-ink-soft dark:border-[#2c2c2c] dark:focus:border-thread-soft"
 								/>
 							</label>
 							{#if resetError}
 								<p class="text-xs text-[#a54a38]">{resetError}</p>
 							{/if}
-							<div class="flex items-center gap-2">
+							<div class="flex items-center gap-2 pt-1">
 								<button
 									type="button"
 									onclick={() => { showReset = false; resetConfirm = ''; resetError = ''; }}
-									class="btn-ghost flex-1"
+									class="flex-1 rounded-lg border border-rule px-4 py-2.5 font-medium text-ink-2 transition hover:bg-paper-2 dark:border-[#2c2c2c] dark:text-[#cfcfcf] dark:hover:bg-[#232323]"
 								>
 									Cancel
 								</button>
@@ -194,7 +200,7 @@
 									type="button"
 									onclick={handleReset}
 									disabled={resetConfirm !== 'DELETE' || resetting}
-									class="btn-danger flex-1"
+									class="flex-1 rounded-lg bg-ink px-4 py-2.5 font-medium text-paper transition hover:bg-ink-2 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#f2f2f2] dark:text-[#141414] dark:hover:bg-paper-2"
 								>
 									{resetting ? 'Resetting...' : 'Delete & start new'}
 								</button>

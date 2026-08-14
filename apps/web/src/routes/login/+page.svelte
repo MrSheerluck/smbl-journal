@@ -1,15 +1,26 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { enhance } from '$app/forms';
 	import AuthShell from '$lib/components/ui/AuthShell.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 
 	let { form } = $props();
+
+	let submitting = $state(false);
 </script>
 
 <AuthShell title="welcome back" subtitle="Sign in to open your private journal.">
-	<form method="POST" class="flex flex-col gap-4">
+	<form
+		method="POST"
+		class="flex flex-col gap-4"
+		use:enhance={() => async ({ update }) => {
+			submitting = true;
+			await update();
+			submitting = false;
+		}}
+	>
 		<TextField label="Email" name="email" type="email" autocomplete="email" value={form?.email ?? ''} required />
 		<TextField label="Password" name="password" type="password" autocomplete="current-password" required />
 
@@ -20,7 +31,7 @@
 		{/if}
 		<FormError message={form?.error} />
 
-		<Button class="mt-2">Sign in</Button>
+		<Button disabled={submitting} class="mt-2">{submitting ? 'Signing in\u2026' : 'Sign in'}</Button>
 	</form>
 
 	<div class="flex items-center justify-between text-sm text-ink-soft">
