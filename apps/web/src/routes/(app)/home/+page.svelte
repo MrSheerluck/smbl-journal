@@ -1,5 +1,26 @@
 <script lang="ts">
-	import { clearVault } from '$lib/vault';
+	import { vaultStatus, unlockVault, clearVault } from '$lib/vault';
+
+	let passphrase = $state('');
+	let error = $state('');
+	let busy = $state(false);
+
+	async function unlock() {
+		if (!passphrase || busy) return;
+		busy = true;
+		error = '';
+		try {
+			const ok = await unlockVault(passphrase);
+			if (!ok) {
+				error = 'Incorrect passphrase. Try again.';
+				passphrase = '';
+			}
+		} catch {
+			error = 'Could not unlock your vault. Try again.';
+		} finally {
+			busy = false;
+		}
+	}
 </script>
 
 <main class="flex min-h-screen flex-col">
@@ -13,4 +34,34 @@
 			</button>
 		</form>
 	</div>
+
+	{#if $vaultStatus === 'locked'}
+		<form
+			class="mx-auto flex w-full max-w-md flex-col gap-4 px-6 py-16"
+			onsubmit={(e) => { e.preventDefault(); unlock(); }}
+		>
+			<p class="text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">unlock your vault</p>
+			<label class="flex flex-col gap-1.5 text-sm">
+				<span class="font-medium text-neutral-500">Passphrase</span>
+				<input
+					bind:value={passphrase}
+					type="password"
+					autocomplete="current-password"
+					class="rounded-lg border border-neutral-300 bg-transparent px-3 py-2.5 outline-none transition focus:border-neutral-500 dark:border-neutral-700 dark:focus:border-neutral-400"
+				/>
+			</label>
+			{#if error}
+				<p class="text-xs text-red-500">{error}</p>
+			{/if}
+			<button
+				type="submit"
+				disabled={!passphrase || busy}
+				class="rounded-lg bg-neutral-900 px-4 py-2.5 font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+			>
+				{busy ? 'Unlocking...' : 'Unlock'}
+			</button>
+		</form>
+	{:else}
+		<p class="mx-auto px-6 py-16 text-sm text-neutral-500">Your journal is unlocked.</p>
+	{/if}
 </main>
