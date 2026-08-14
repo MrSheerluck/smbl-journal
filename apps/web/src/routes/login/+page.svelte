@@ -15,10 +15,12 @@
 	<form
 		method="POST"
 		class="flex flex-col gap-4"
-		use:enhance={() => async ({ update }) => {
+		use:enhance={({}) => {
 			submitting = true;
-			await update();
-			submitting = false;
+			return async ({ update }) => {
+				await update();
+				submitting = false;
+			};
 		}}
 	>
 		<TextField label="Email" name="email" type="email" autocomplete="email" value={form?.email ?? ''} required />
