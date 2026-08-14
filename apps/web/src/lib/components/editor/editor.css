@@ -1,0 +1,207 @@
+/* Tiptap editor WYSIWYG styles */
+
+.rich-editor .tiptap {
+	min-height: 55vh;
+	padding: 1.25rem 1.5rem 3rem;
+	outline: none;
+}
+
+.rich-editor .tiptap > * + * {
+	margin-top: 0.6rem;
+}
+
+.rich-editor .tiptap h1,
+.rich-editor .tiptap h2,
+.rich-editor .tiptap h3,
+.rich-editor .tiptap h4,
+.rich-editor .tiptap h5,
+.rich-editor .tiptap h6 {
+	font-weight: 650;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	color: inherit;
+}
+
+.rich-editor .tiptap h1 {
+	font-size: 1.75rem;
+	margin-top: 1.5rem;
+}
+
+.rich-editor .tiptap h2 {
+	font-size: 1.375rem;
+	margin-top: 1.25rem;
+}
+
+.rich-editor .tiptap h3 {
+	font-size: 1.125rem;
+	margin-top: 1rem;
+}
+
+.rich-editor .tiptap h4,
+.rich-editor .tiptap h5,
+.rich-editor .tiptap h6 {
+	font-size: 1rem;
+	margin-top: 0.875rem;
+}
+
+.rich-editor .tiptap p {
+	line-height: 1.75;
+}
+
+.rich-editor .tiptap ul,
+.rich-editor .tiptap ol {
+	padding-left: 1.375rem;
+	line-height: 1.75;
+}
+
+.rich-editor .tiptap ul {
+	list-style: disc;
+}
+
+.rich-editor .tiptap ol {
+	list-style: decimal;
+}
+
+.rich-editor .tiptap ul ul,
+.rich-editor .tiptap ol ol,
+.rich-editor .tiptap ul ol,
+.rich-editor .tiptap ol ul {
+	margin-top: 0.25rem;
+}
+
+.rich-editor .tiptap ul[data-type='taskList'] {
+	list-style: none;
+	padding-left: 0;
+}
+
+.rich-editor .tiptap ul[data-type='taskList'] li {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
+}
+
+.rich-editor .tiptap ul[data-type='taskList'] li > label {
+	flex-shrink: 0;
+	margin-top: 0.25rem;
+}
+
+.rich-editor .tiptap ul[data-type='taskList'] li > div {
+	flex: 1;
+}
+
+.rich-editor .tiptap ul[data-type='taskList'] li[data-checked='true'] > div {
+	text-decoration: line-through;
+	opacity: 0.6;
+}
+
+.rich-editor .tiptap blockquote {
+	border-left: 3px solid var(--color-neutral-300);
+	padding-left: 1rem;
+	margin-left: 0.25rem;
+	color: var(--color-neutral-500);
+	font-style: italic;
+}
+
+.dark .rich-editor .tiptap blockquote {
+	border-left-color: var(--color-neutral-700);
+	color: var(--color-neutral-400);
+}
+
+.rich-editor .tiptap code {
+	background: var(--color-neutral-100);
+	border: 1px solid var(--color-neutral-200);
+	border-radius: 0.375rem;
+	padding: 0.1rem 0.35rem;
+	font-size: 0.85em;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dark .rich-editor .tiptap code {
+	background: var(--color-neutral-900);
+	border-color: var(--color-neutral-800);
+}
+
+.rich-editor .tiptap pre {
+	background: var(--color-neutral-900);
+	color: var(--color-neutral-100);
+	border-radius: 0.75rem;
+	padding: 1rem 1.25rem;
+	overflow-x: auto;
+	line-height: 1.6;
+}
+
+.rich-editor .tiptap pre code {
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: 0.875rem;
+	color: inherit;
+}
+
+.dark .rich-editor .tiptap pre {
+	background: var(--color-neutral-800);
+}
+
+.rich-editor .tiptap hr {
+	border: none;
+	border-top: 1px solid var(--color-neutral-300);
+	margin: 1.5rem 0;
+}
+
+.dark .rich-editor .tiptap hr {
+	border-top-color: var(--color-neutral-700);
+}
+
+.rich-editor .tiptap a {
+	color: var(--color-blue-600);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+}
+
+.dark .rich-editor .tiptap a {
+	color: var(--color-blue-400);
+}
+
+.rich-editor .tiptap mark {
+	background: var(--color-yellow-200);
+	border-radius: 0.25rem;
+	padding: 0 0.15rem;
+}
+
+.dark .rich-editor .tiptap mark {
+	background: var(--color-yellow-500);
+	color: var(--color-neutral-900);
+}
+
+.rich-editor .tiptap .is-editor-empty:first-child::before,
+.rich-editor .tiptap li.is-empty::before {
+	content: attr(data-placeholder);
+	float: left;
+	color: var(--color-neutral-400);
+	pointer-events: none;
+	height: 0;
+}
+
+.dark .rich-editor .tiptap .is-editor-empty:first-child::before,
+.dark .rich-editor .tiptap li.is-empty::before {
+	color: var(--color-neutral-500);
+}
+
+.rich-editor .tiptap ::selection {
+	background: var(--color-neutral-200);
+}
+
+.dark .rich-editor .tiptap ::selection {
+	background: var(--color-neutral-700);
+}
+
+.rich-editor .tiptap .suggestion {
+	background: var(--color-yellow-200);
+	border-radius: 0.25rem;
+}
+
+.dark .rich-editor .tiptap .suggestion {
+	background: var(--color-yellow-500);
+	color: var(--color-neutral-900);
+}

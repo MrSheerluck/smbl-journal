@@ -12,7 +12,19 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"dependencies": {
-	  "@smbl/shared": "workspace:*"
+		"@smbl/shared": "workspace:*",
+		"@tiptap/core": "3.30.1",
+		"@tiptap/extension-bubble-menu": "3.30.1",
+		"@tiptap/extension-highlight": "3.30.1",
+		"@tiptap/extension-link": "3.30.1",
+		"@tiptap/extension-list": "3.30.1",
+		"@tiptap/extension-placeholder": "3.30.1",
+		"@tiptap/extension-typography": "3.30.1",
+		"@tiptap/extension-underline": "3.30.1",
+		"@tiptap/markdown": "3.30.1",
+		"@tiptap/pm": "3.30.1",
+		"@tiptap/starter-kit": "3.30.1",
+		"@tiptap/suggestion": "3.30.1"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-cloudflare": "^7.2.9",
