@@ -22,7 +22,7 @@ async fn verify_access_token(token: &str) -> Option<Claims> {
     Some(data.claims)
 }
 
-async fn auth_user(headers: &HeaderMap) -> Option<Claims> {
+pub(crate) async fn auth_user(headers: &HeaderMap) -> Option<Claims> {
     let bearer = headers.get(AUTHORIZATION)?.to_str().ok()?;
     let token = bearer.strip_prefix("Bearer ")?;
     verify_access_token(token).await

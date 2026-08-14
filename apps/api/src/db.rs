@@ -75,6 +75,25 @@ pub async fn init_schema(conn: &Connection) {
     {
         tracing::error!("failed to init users table: {e}");
     }
+
+    if let Err(e) = conn
+        .execute(
+            "CREATE TABLE IF NOT EXISTS entries (
+				id TEXT PRIMARY KEY,
+				user_id TEXT NOT NULL,
+				entry_date TEXT NOT NULL,
+				body_ciphertext TEXT NOT NULL,
+				body_iv TEXT NOT NULL,
+				created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+				updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+				UNIQUE(user_id, entry_date)
+			)",
+            (),
+        )
+        .await
+    {
+        tracing::error!("failed to init entries table: {e}");
+    }
 }
 
 pub async fn upsert_user(
@@ -119,6 +138,48 @@ pub async fn save_vault(
     )
     .await
     .map(|_| ())
+}
+
+pub async fn save_entry(
+    conn: &Connection,
+    user_id: &str,
+    id: &str,
+    entry_date: &str,
+    body_ciphertext: &str,
+    body_iv: &str,
+) -> Result<(), libsql::Error> {
+    conn.execute(
+        "INSERT INTO entries (id, user_id, entry_date, body_ciphertext, body_iv)
+         VALUES (?1, ?2, ?3, ?4, ?5)
+         ON CONFLICT(user_id, entry_date) DO UPDATE SET
+             body_ciphertext = excluded.body_ciphertext,
+             body_iv = excluded.body_iv,
+             updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')",
+        libsql::params![id, user_id, entry_date, body_ciphertext, body_iv],
+    )
+    .await
+    .map(|_| ())
+}
+
+pub async fn get_entry(
+    conn: &Connection,
+    user_id: &str,
+    entry_date: &str,
+) -> Option<(String, String, String, String)> {
+    let mut rows = conn
+        .query(
+            "SELECT id, entry_date, body_ciphertext, body_iv FROM entries WHERE user_id = ?1 AND entry_date = ?2",
+            libsql::params![user_id, entry_date],
+        )
+        .await
+        .ok()?;
+    let row = rows.next().await.ok()??;
+    Some((
+        row.get::<String>(0).ok()?,
+        row.get::<String>(1).ok()?,
+        row.get::<String>(2).ok()?,
+        row.get::<String>(3).ok()?,
+    ))
 }
 
 pub async fn get_vault(

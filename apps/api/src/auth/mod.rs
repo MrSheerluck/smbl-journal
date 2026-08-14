@@ -20,6 +20,7 @@ use crate::{db, state::AppState};
 use password::password;
 use password_reset::{password_reset_confirm, password_reset_request};
 use requests::Jwks;
+pub(crate) use session::auth_user;
 use session::{get_vault, logout, me, save_vault};
 
 use signup::{signup, verify_email};
