@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
-import { SESSION_COOKIE, getVault, saveVault } from '$lib/server/api';
+import { SESSION_COOKIE, getVault, saveVault, resetVault } from '$lib/server/api';
 
 
 
@@ -24,5 +24,13 @@ export async function PUT({ request, cookies }: RequestEvent) {
 		return json({ error: 'failed to save vault' }, { status: 500 });
 	}
 
+	return json({ ok: true });
+}
+
+export async function DELETE({ cookies }: RequestEvent) {
+	const token = cookies.get(SESSION_COOKIE);
+	if (!token) return json({ error: 'no session' }, { status: 401 });
+	const ok = await resetVault(token);
+	if (!ok) return json({ error: 'failed to reset vault' }, { status: 500 });
 	return json({ ok: true });
 }

@@ -5,7 +5,6 @@ import { PluginKey } from '@tiptap/pm/state';
 export interface SlashItem {
 	title: string;
 	description: string;
-	/** Short icon label rendered in the menu (emoji or 1-2 chars). */
 	icon: string;
 	keywords?: string[];
 	action: (editor: Editor) => void;
@@ -17,7 +16,6 @@ export interface SlashMenuController {
 	destroy(): void;
 }
 
-/** A Svelte-side factory that renders + manages the slash dropdown DOM. */
 export type SlashMenuFactory = (props: SuggestionProps<SlashItem>) => SlashMenuController;
 
 export const SlashPluginKey = new PluginKey<unknown>('slashCommand');

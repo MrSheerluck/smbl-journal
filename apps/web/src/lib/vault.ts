@@ -102,3 +102,9 @@ export function clearVault(): void {
 	sessionStorage.removeItem(VAULT_KEY);
 	vaultStatus.set('locked');
 }
+
+export async function resetVault(): Promise<void> {
+	const res = await fetch('/api/vault', { method: 'DELETE' });
+	if (!res.ok) throw new Error('Failed to reset vault');
+	clearVault();
+}

@@ -21,8 +21,6 @@ pub async fn connect() -> Option<Arc<Connection>> {
     }
 }
 
-/// True if the `users` table does not have the `workos_id` column
-/// (e.g. it was created with a different auth schema). The table is rebuilt.
 async fn users_table_needs_migration(conn: &Connection) -> bool {
     let Ok(mut rows) = conn.query("PRAGMA table_info(users)", ()).await else {
         return true;
@@ -109,7 +107,6 @@ pub async fn upsert_user(
     .map(|_| ())
 }
 
-/// Returns (email, vault_setup) for a user id.
 pub async fn get_user(conn: &Connection, workos_id: &str) -> Option<(String, bool)> {
     let mut rows = conn
         .query(
@@ -182,6 +179,23 @@ pub async fn get_entry(
     ))
 }
 
+pub async fn list_entry_dates(conn: &Connection, user_id: &str) -> Option<Vec<(String, String)>> {
+    let mut rows = conn
+        .query(
+            "SELECT id, entry_date FROM entries WHERE user_id = ?1 ORDER BY entry_date DESC",
+            libsql::params![user_id],
+        )
+        .await
+        .ok()?;
+    let mut dates = Vec::new();
+    while let Ok(Some(row)) = rows.next().await {
+        let id = row.get::<String>(0).ok()?;
+        let date = row.get::<String>(1).ok()?;
+        dates.push((id, date));
+    }
+    Some(dates)
+}
+
 pub async fn delete_entry(
     conn: &Connection,
     user_id: &str,
@@ -214,4 +228,23 @@ pub async fn get_vault(
         row.get::<String>(2).ok()?,
         row.get::<String>(3).ok()?,
     ))
+}
+
+pub async fn reset_user(
+    conn: &Connection,
+    workos_id: &str,
+) -> Result<(), libsql::Error> {
+    conn.execute(
+        "UPDATE users
+            SET wrapped_vault_key = NULL, wrapped_key_iv = NULL, kdf_salt = NULL, kdf_params = NULL
+          WHERE workos_id = ?1",
+        libsql::params![workos_id],
+    )
+    .await?;
+    conn.execute(
+        "DELETE FROM entries WHERE user_id = ?1",
+        libsql::params![workos_id],
+    )
+    .await?;
+    Ok(())
 }

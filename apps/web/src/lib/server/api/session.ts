@@ -1,4 +1,4 @@
-import { getJson, putJson } from './rust';
+import { getJson, putJson, deleteRequest } from './rust';
 import type { Session } from './auth';
 
 
@@ -23,4 +23,9 @@ export async function saveVault(token: string, payload: unknown): Promise<boolea
 export async function getVault(token: string): Promise<VaultData | null> {
 	const result = await getJson<VaultData>('/auth/me/vault', token);
 	return 'wrapped' in result ? result : null;
+}
+
+export async function resetVault(token: string): Promise<boolean> {
+	const result = await deleteRequest<{ ok: boolean }>('/auth/me/vault', token);
+	return 'ok' in result && result.ok === true;
 }

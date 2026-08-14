@@ -9,13 +9,10 @@
 	import ToolButton from './ToolButton.svelte';
 
 	interface Props {
-		/** Markdown content — applied on mount and whenever `reloadKey` changes. */
 		content?: string;
-		/** Bump to re-apply `content` (e.g. when switching entries). */
 		reloadKey?: string;
 		placeholder?: string;
 		autofocus?: boolean;
-		/** Fired (debounced) with the current markdown whenever the doc changes. */
 		onChange?: (markdown: string) => void;
 	}
 
@@ -30,9 +27,7 @@
 	let editorEl = $state<HTMLDivElement>();
 	let bubbleEl = $state<HTMLDivElement>();
 	let editor = $state<Editor | null>(null);
-	/** Bumped on every transaction so toolbar `isActive` states re-render. */
 	let version = $state(0);
-	/** True while the document is empty — used for the Notion-style "/" hint. */
 	let isEmpty = $state(true);
 	let focused = $state(false);
 
@@ -143,26 +138,26 @@
 </script>
 
 <div class="rich-editor relative flex flex-col">
-	<div class="toolbar flex flex-wrap items-center gap-0.5 border-b border-neutral-200 px-2 py-1.5 dark:border-neutral-800" data-version={version}>
+	<div class="toolbar flex flex-wrap items-center gap-0.5 border-b border-rule px-2 py-1.5 dark:border-rule-dark" data-version={version}>
 		<ToolButton icon="undo" label="Undo" onclick={() => run((ed) => ed.chain().undo().run())} disabled={!editor?.can().undo()} />
 		<ToolButton icon="redo" label="Redo" onclick={() => run((ed) => ed.chain().redo().run())} disabled={!editor?.can().redo()} />
-		<div class="mx-1 h-5 w-px bg-neutral-200 dark:bg-neutral-800"></div>
+		<div class="mx-1 h-5 w-px bg-rule dark:bg-rule-dark"></div>
 		<ToolButton icon="h1" label="Heading 1" active={isHeading(1)} onclick={() => toggleHeading(1)} />
 		<ToolButton icon="h2" label="Heading 2" active={isHeading(2)} onclick={() => toggleHeading(2)} />
 		<ToolButton icon="h3" label="Heading 3" active={isHeading(3)} onclick={() => toggleHeading(3)} />
-		<div class="mx-1 h-5 w-px bg-neutral-200 dark:bg-neutral-800"></div>
+		<div class="mx-1 h-5 w-px bg-rule dark:bg-rule-dark"></div>
 		<ToolButton icon="bold" label="Bold" active={editor?.isActive('bold') ?? false} onclick={() => run((ed) => ed.chain().toggleBold().run())} />
 		<ToolButton icon="italic" label="Italic" active={editor?.isActive('italic') ?? false} onclick={() => run((ed) => ed.chain().toggleItalic().run())} />
 		<ToolButton icon="underline" label="Underline" active={editor?.isActive('underline') ?? false} onclick={() => run((ed) => ed.chain().toggleUnderline().run())} />
 		<ToolButton icon="strike" label="Strikethrough" active={editor?.isActive('strike') ?? false} onclick={() => run((ed) => ed.chain().toggleStrike().run())} />
 		<ToolButton icon="code" label="Inline code" active={editor?.isActive('code') ?? false} onclick={() => run((ed) => ed.chain().toggleCode().run())} />
 		<ToolButton icon="codeblock" label="Code block" active={editor?.isActive('codeBlock') ?? false} onclick={() => run((ed) => ed.chain().toggleCodeBlock().run())} />
-		<div class="mx-1 h-5 w-px bg-neutral-200 dark:bg-neutral-800"></div>
+		<div class="mx-1 h-5 w-px bg-rule dark:bg-rule-dark"></div>
 		<ToolButton icon="bulletlist" label="Bullet list" active={editor?.isActive('bulletList') ?? false} onclick={() => run((ed) => ed.chain().toggleBulletList().run())} />
 		<ToolButton icon="orderedlist" label="Numbered list" active={editor?.isActive('orderedList') ?? false} onclick={() => run((ed) => ed.chain().toggleOrderedList().run())} />
 		<ToolButton icon="tasklist" label="Task list" active={editor?.isActive('taskList') ?? false} onclick={() => run((ed) => ed.chain().toggleTaskList().run())} />
 		<ToolButton icon="quote" label="Blockquote" active={editor?.isActive('blockquote') ?? false} onclick={() => run((ed) => ed.chain().toggleBlockquote().run())} />
-		<div class="mx-1 h-5 w-px bg-neutral-200 dark:bg-neutral-800"></div>
+		<div class="mx-1 h-5 w-px bg-rule dark:bg-rule-dark"></div>
 		<ToolButton icon="hr" label="Horizontal rule" onclick={() => run((ed) => ed.chain().setHorizontalRule().run())} />
 		<ToolButton icon="link" label="Link" active={editor?.isActive('link') ?? false} onclick={toggleLink} />
 		<ToolButton icon="highlight" label="Highlight" active={editor?.isActive('highlight') ?? false} onclick={() => run((ed) => ed.chain().toggleHighlight().run())} />
@@ -172,18 +167,18 @@
 	<div bind:this={editorEl} class="tiptap focus:outline-none"></div>
 
 	{#if editor && isEmpty && focused}
-		<div class="slash-hint pointer-events-none absolute bottom-3 left-6 text-xs text-neutral-400 dark:text-neutral-500">
+		<div class="slash-hint pointer-events-none absolute bottom-3 left-6 font-mono text-xs text-ink-soft dark:text-[#8b887d]">
 			Type "/" for commands
 		</div>
 	{/if}
 
 	{#if editor}
-	<div bind:this={bubbleEl} class="bubble-menu pointer-events-auto flex items-center gap-0.5 rounded-xl border border-neutral-200 bg-white p-1 shadow-xl dark:border-neutral-700 dark:bg-neutral-900" hidden>
+	<div bind:this={bubbleEl} class="bubble-menu pointer-events-auto flex items-center gap-0.5 rounded-xl border border-rule bg-paper p-1 shadow-xl dark:border-rule-dark dark:bg-[#20211d]" hidden>
 			<ToolButton size="sm" icon="bold" label="Bold" onclick={() => run((ed) => ed.chain().toggleBold().run())} />
 			<ToolButton size="sm" icon="italic" label="Italic" onclick={() => run((ed) => ed.chain().toggleItalic().run())} />
 			<ToolButton size="sm" icon="strike" label="Strikethrough" onclick={() => run((ed) => ed.chain().toggleStrike().run())} />
 			<ToolButton size="sm" icon="code" label="Inline code" onclick={() => run((ed) => ed.chain().toggleCode().run())} />
-			<div class="mx-1 h-4 w-px bg-neutral-200 dark:bg-neutral-800"></div>
+			<div class="mx-1 h-4 w-px bg-rule dark:bg-rule-dark"></div>
 			<ToolButton size="sm" icon="link" label="Link" onclick={toggleLink} />
 			<ToolButton size="sm" icon="highlight" label="Highlight" onclick={() => run((ed) => ed.chain().toggleHighlight().run())} />
 		</div>

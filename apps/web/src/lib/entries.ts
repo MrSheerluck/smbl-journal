@@ -16,15 +16,13 @@ export function todayLocal(): string {
 	return `${y}-${m}-${day}`;
 }
 
-export async function saveTodayEntry(body: string): Promise<void> {
-	// `body` is markdown (the editor always serializes to markdown; the server
-	// only ever sees the AES-GCM ciphertext of it).
+export async function saveEntry(date: string, body: string): Promise<void> {
 	const key = getVaultKey();
 	if (!key) throw new Error('Vault is locked');
 	const { iv, ciphertext } = await encryptText(key, body);
 	const payload: Entry = {
 		id: crypto.randomUUID(),
-		entry_date: todayLocal(),
+		entry_date: date,
 		body_ciphertext: bytesToBase64(ciphertext),
 		body_iv: bytesToBase64(iv)
 	};
@@ -36,6 +34,10 @@ export async function saveTodayEntry(body: string): Promise<void> {
 	if (!res.ok) throw new Error('Failed to save entry');
 }
 
+export async function saveTodayEntry(body: string): Promise<void> {
+	return saveEntry(todayLocal(), body);
+}
+
 export async function loadEntry(date: string): Promise<string | null> {
 	const key = getVaultKey();
 	if (!key) throw new Error('Vault is locked');
@@ -44,6 +46,13 @@ export async function loadEntry(date: string): Promise<string | null> {
 	if (!res.ok) throw new Error('Failed to load entry');
 	const entry = (await res.json()) as Entry;
 	return decryptText(key, base64ToBytes(entry.body_iv), base64ToBytes(entry.body_ciphertext));
+}
+
+export async function listEntryDates(): Promise<string[]> {
+	const res = await fetch('/api/entries');
+	if (!res.ok) throw new Error('Failed to list entries');
+	const entries = (await res.json()) as { id: string; entry_date: string }[];
+	return entries.map((e) => e.entry_date).sort().reverse();
 }
 
 export async function deleteEntry(date: string): Promise<void> {

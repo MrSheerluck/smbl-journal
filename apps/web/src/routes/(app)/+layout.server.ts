@@ -9,6 +9,7 @@ export const load: LayoutServerLoad = ({ locals, url }) => {
 	const path = url.pathname;
 	if (path === '/setup' && session.vault_setup) throw redirect(303, '/home');
 	if (path.startsWith('/home') && !session.vault_setup) throw redirect(303, '/setup');
+	if (path.startsWith('/settings') && !session.vault_setup) throw redirect(303, '/setup');
 
 	return { session };
 };

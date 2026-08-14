@@ -1,12 +1,15 @@
 import { json } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
-import { SESSION_COOKIE, getEntry, saveEntry, deleteEntry } from '$lib/server/api';
+import { SESSION_COOKIE, getEntry, listEntries, saveEntry, deleteEntry } from '$lib/server/api';
 
 export async function GET({ cookies, url }: RequestEvent) {
 	const token = cookies.get(SESSION_COOKIE);
 	if (!token) return json({ error: 'no session' }, { status: 401 });
 	const date = url.searchParams.get('date');
-	if (!date) return json({ error: 'missing date' }, { status: 400 });
+	if (!date) {
+		const entries = await listEntries(token);
+		return json(entries);
+	}
 	const entry = await getEntry(token, date);
 	if (!entry) return json({ error: 'no entry' }, { status: 404 });
 	return json(entry);

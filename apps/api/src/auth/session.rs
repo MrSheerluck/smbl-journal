@@ -92,6 +92,35 @@ pub async fn save_vault(
     }
 }
 
+pub async fn reset_vault(State(state): State<AppState>, headers: HeaderMap) -> Response {
+    let Some(claims) = auth_user(&headers).await else {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"error": "no session"})),
+        )
+            .into_response();
+    };
+    let Some(conn) = &state.conn else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"error": "db unavailable"})),
+        )
+            .into_response();
+    };
+
+    match db::reset_user(conn, &claims.sub).await {
+        Ok(_) => (StatusCode::OK, Json(json!({"ok": true}))).into_response(),
+        Err(e) => {
+            tracing::error!("failed to reset vault: {e}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": "failed to reset vault"})),
+            )
+                .into_response()
+        }
+    }
+}
+
 pub async fn logout(Json(req): Json<RevokeSessionRequest>) -> Response {
     let result = workos_client()
         .user_management()
