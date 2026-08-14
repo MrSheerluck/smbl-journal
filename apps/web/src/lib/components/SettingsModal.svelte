@@ -330,6 +330,32 @@
 					<button type="submit" class="btn-danger">Sign out</button>
 				</form>
 			</div>
+
+			<div class="mt-6 rounded-2xl border border-rule bg-paper-2 p-5 dark:border-rule-dark dark:bg-[#1b1b1b]">
+				<div class="flex items-center gap-3">
+					<div
+						class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ec4c68]/10"
+					>
+						<svg viewBox="0 0 24 24" aria-hidden="true" class="h-5 w-5 fill-[#ec4c68]">
+							<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+						</svg>
+					</div>
+					<div>
+						<h2 class="font-display text-base leading-tight">Support smbl journal</h2>
+						<p class="text-sm text-ink-soft">
+							Free forever and open source. A small sponsor helps keep it alive.
+						</p>
+					</div>
+				</div>
+				<a
+					href="https://github.com/sponsors/MrSheerluck"
+					target="_blank"
+					rel="noopener"
+					class="mt-4 flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper transition hover:bg-ink-2 dark:bg-[#f2f2f2] dark:text-[#141414]"
+				>
+					Sponsor on GitHub
+				</a>
+			</div>
 		</div>
 	</div>
 </div>
