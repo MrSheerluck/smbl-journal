@@ -17,9 +17,9 @@
 	--color-rule: #cfd8e4;
 	--color-rule-dark: #2c2c2c;
 
-	--font-serif: 'Spectral', Georgia, serif;
-	--font-display: 'Cormorant Garamond', Georgia, serif;
-	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+	--font-serif: 'Newsreader', Georgia, serif;
+	--font-display: 'Piazzolla', Georgia, serif;
+	--font-mono: 'Special Elite', 'Courier New', monospace;
 }
 
 @layer base {

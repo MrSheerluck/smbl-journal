@@ -2,8 +2,11 @@
 	import { clearVault, changePassphrase, getVaultKey } from '$lib/vault';
 	import { exportPlaintext } from '$lib/entries';
 	import { theme, type Theme } from '$lib/theme.svelte';
+	import { font, FONT_PRESETS, type FontKey } from '$lib/fonts.svelte';
 
 	let { onClose }: { onClose: () => void } = $props();
+
+	const fontKeys = Object.keys(FONT_PRESETS) as FontKey[];
 
 	const options: { value: Theme; label: string }[] = [
 		{ value: 'light', label: 'Light' },
@@ -104,9 +107,10 @@
 		<div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
 			<div>
 				<h2 class="font-display text-lg leading-tight">Appearance</h2>
+
 				<div class="mt-3 flex items-center justify-between gap-4">
 					<p class="text-sm text-ink-2">Theme</p>
-					<div class="flex rounded-full border border-rule bg-paper-2 p-0.5 dark:border-rule-dark dark:bg-[#1b1b1b]">
+					<div class="flex rounded-full border border-rule bg-paper-2 p-0.5 dark:border-rule-dark">
 						{#each options as option}
 							<button
 								type="button"
@@ -119,6 +123,29 @@
 								class:dark:text-[#141414]={theme.value === option.value}
 							>
 								{option.label}
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				<div class="mt-4 flex flex-col gap-2">
+					<p class="text-sm text-ink-2">Font</p>
+					<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+						{#each fontKeys as key}
+							<button
+								type="button"
+								onclick={() => (font.value = key)}
+								class="flex flex-col items-center gap-1 rounded-xl border border-rule px-3 py-2.5 text-sm transition hover:border-ink-soft dark:border-rule-dark dark:hover:border-[#383838]"
+								class:border-thread={font.value === key}
+								class:dark:border-thread-soft={font.value === key}
+							>
+								<span
+									class="font-display text-base leading-none"
+									style:font-family={FONT_PRESETS[key].display}
+								>
+									Aa
+								</span>
+								<span class="text-xs text-ink-soft">{FONT_PRESETS[key].label}</span>
 							</button>
 						{/each}
 					</div>
