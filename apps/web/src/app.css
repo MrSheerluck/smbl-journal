@@ -72,10 +72,10 @@
 }
 
 ::selection {
-	background: var(--color-thread-faint);
+	background: rgba(47, 95, 158, 0.35);
 }
 .dark ::selection {
-	background: rgba(217, 169, 78, 0.35);
+	background: rgba(226, 189, 112, 0.35);
 }
 
 .dark {

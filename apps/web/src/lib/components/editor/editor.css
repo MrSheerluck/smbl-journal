@@ -191,11 +191,11 @@
 }
 
 .rich-editor .tiptap ::selection {
-	background: var(--color-thread-faint);
+	background: rgba(47, 95, 158, 0.35);
 }
 
 .dark .rich-editor .tiptap ::selection {
-	background: rgba(79, 138, 120, 0.35);
+	background: rgba(226, 189, 112, 0.35);
 }
 
 .rich-editor .tiptap .suggestion {
