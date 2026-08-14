@@ -3,8 +3,76 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+	/* Warm, slightly-gray paper — reads as a real page, not pure white. */
+	--color-paper: #f5f2ea;
+	--color-paper-2: #efeae0;
+	--color-ink: #20211e;
+	--color-ink-2: #3a3b36;
+	--color-ink-soft: #6f706a;
+
+	/* The "thread" — a deep jade that ties days together, like a linen bookmark. */
+	--color-thread: #2f6b5b;
+	--color-thread-soft: #4d8a78;
+	--color-thread-faint: #dbe6e0;
+
+	/* Ruled-line separators, like notebook rulings. */
+	--color-rule: #ddd8cb;
+	--color-rule-dark: #2a2b27;
+
+	/* Type — a serif body (you're reading a journal), Fraunces display for days,
+	   and Space Mono for the ledger metadata. */
+	--font-serif: 'Source Serif 4', Georgia, serif;
+	--font-display: 'Fraunces', Georgia, serif;
+	--font-mono: 'Space Mono', ui-monospace, monospace;
+}
+
 @layer base {
 	body {
-		@apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
+		@apply bg-paper font-serif text-ink antialiased dark:bg-[#171814] dark:text-[#e8e4da];
+		text-rendering: optimizeLegibility;
 	}
+
+	/* A faint ruled texture to make the page feel like paper. */
+	body::before {
+		content: '';
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		background-image: repeating-linear-gradient(
+			to bottom,
+			transparent 0,
+			transparent 3px,
+			rgba(32, 33, 30, 0.02) 3px,
+			rgba(32, 33, 30, 0.02) 4px
+		);
+		z-index: 0;
+	}
+}
+
+::selection {
+	background: var(--color-thread-faint);
+}
+.dark ::selection {
+	background: rgba(79, 138, 120, 0.35);
+}
+
+/* Ledger eyebrow — the small data labels of the journal. */
+.eyebrow {
+	@apply font-mono text-[0.65rem] uppercase tracking-[0.22em];
+}
+
+/* Primary action, ink-filled like a pen stroke. */
+.btn-ink {
+	@apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink-2 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#e8e4da] dark:text-[#171814] dark:hover:bg-white;
+}
+
+/* Quiet action, hairline. */
+.btn-ghost {
+	@apply inline-flex items-center justify-center gap-2 rounded-full border border-rule bg-transparent px-4 py-2 text-sm text-ink-2 transition hover:border-ink-soft hover:bg-paper-2 disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#2a2b27] dark:text-[#d4cfc2] dark:hover:border-[#4a4b44] dark:hover:bg-[#20211d];
+}
+
+/* Destructive, a soft red-ink. */
+.btn-danger {
+	@apply inline-flex items-center justify-center gap-2 rounded-full border border-[#c97f6e] bg-transparent px-4 py-2 text-sm text-[#a54a38] transition hover:bg-[#f5e6e1] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#6b4438] dark:text-[#e0a794] dark:hover:bg-[#2b1f1a];
 }

@@ -16,7 +16,7 @@ export function todayLocal(): string {
 	return `${y}-${m}-${day}`;
 }
 
-export async function saveTodayEntry(body: string): Promise<void> {
+export async function saveEntry(date: string, body: string): Promise<void> {
 	// `body` is markdown (the editor always serializes to markdown; the server
 	// only ever sees the AES-GCM ciphertext of it).
 	const key = getVaultKey();
@@ -24,7 +24,7 @@ export async function saveTodayEntry(body: string): Promise<void> {
 	const { iv, ciphertext } = await encryptText(key, body);
 	const payload: Entry = {
 		id: crypto.randomUUID(),
-		entry_date: todayLocal(),
+		entry_date: date,
 		body_ciphertext: bytesToBase64(ciphertext),
 		body_iv: bytesToBase64(iv)
 	};
@@ -34,6 +34,10 @@ export async function saveTodayEntry(body: string): Promise<void> {
 		body: JSON.stringify(payload)
 	});
 	if (!res.ok) throw new Error('Failed to save entry');
+}
+
+export async function saveTodayEntry(body: string): Promise<void> {
+	return saveEntry(todayLocal(), body);
 }
 
 export async function loadEntry(date: string): Promise<string | null> {

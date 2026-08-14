@@ -21,8 +21,8 @@
 	title={label}
 	{onclick}
 	{disabled}
-	class={`flex items-center justify-center rounded-md text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 ${sizeClass} ${
-		active ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : ''
+	class={`flex items-center justify-center rounded-md text-ink-soft transition hover:bg-paper-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-[#2a2b27] dark:hover:text-[#e8e4da] ${sizeClass} ${
+		active ? 'bg-paper-2 text-ink dark:bg-[#2a2b27] dark:text-[#e8e4da]' : ''
 	}`}
 >
 	<svg
