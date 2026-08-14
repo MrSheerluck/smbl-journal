@@ -23,16 +23,16 @@
 		<Button class="mt-2">Sign in</Button>
 	</form>
 
-	<div class="flex items-center justify-between text-sm text-neutral-500">
+	<div class="flex items-center justify-between text-sm text-ink-soft">
 		<a
 			href="/forgot-password"
-			class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+			class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 		>
 			Forgot password?
 		</a>
 		<a
 			href="/signup"
-			class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+			class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 		>
 			Create an account
 		</a>

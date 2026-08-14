@@ -4,27 +4,27 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-	--color-paper: #f5f2ea;
-	--color-paper-2: #efeae0;
-	--color-ink: #20211e;
-	--color-ink-2: #3a3b36;
-	--color-ink-soft: #6f706a;
+	--color-paper: #e9edf3;
+	--color-paper-2: #dde3ec;
+	--color-ink: #16233b;
+	--color-ink-2: #33425c;
+	--color-ink-soft: #5a6b85;
 
-	--color-thread: #2f6b5b;
-	--color-thread-soft: #4d8a78;
-	--color-thread-faint: #dbe6e0;
+	--color-thread: #2f5f9e;
+	--color-thread-soft: #557fae;
+	--color-thread-faint: #dbe4ef;
 
-	--color-rule: #ddd8cb;
-	--color-rule-dark: #2a2b27;
+	--color-rule: #cfd8e4;
+	--color-rule-dark: #2c2c2c;
 
-	--font-serif: 'Source Serif 4', Georgia, serif;
-	--font-display: 'Fraunces', Georgia, serif;
-	--font-mono: 'Space Mono', ui-monospace, monospace;
+	--font-serif: 'Spectral', Georgia, serif;
+	--font-display: 'Cormorant Garamond', Georgia, serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
 @layer base {
 	body {
-		@apply bg-paper font-serif text-ink antialiased dark:bg-[#171814] dark:text-[#e8e4da];
+		@apply bg-paper font-serif text-ink antialiased dark:bg-[#141414] dark:text-[#f2f2f2];
 		text-rendering: optimizeLegibility;
 	}
 
@@ -37,8 +37,8 @@
 			to bottom,
 			transparent 0,
 			transparent 3px,
-			rgba(32, 33, 30, 0.02) 3px,
-			rgba(32, 33, 30, 0.02) 4px
+			rgba(27, 36, 49, 0.02) 3px,
+			rgba(27, 36, 49, 0.02) 4px
 		);
 		z-index: 0;
 	}
@@ -48,13 +48,20 @@
 	background: var(--color-thread-faint);
 }
 .dark ::selection {
-	background: rgba(143, 192, 176, 0.35);
+	background: rgba(217, 169, 78, 0.35);
 }
 
 .dark {
-	--color-thread: #74b39f;
-	--color-thread-soft: #8fc0b0;
-	--color-thread-faint: #233832;
+	--color-paper: #141414;
+	--color-paper-2: #1b1b1b;
+	--color-ink: #f2f2f2;
+	--color-ink-2: #cfcfcf;
+	--color-ink-soft: #a3a3a3;
+	--color-thread: #d9a94e;
+	--color-thread-soft: #e2bd70;
+	--color-thread-faint: #262015;
+	--color-rule: #2c2c2c;
+	--color-rule-dark: #2c2c2c;
 }
 
 .eyebrow {
@@ -62,11 +69,11 @@
 }
 
 .btn-ink {
-	@apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink-2 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#e8e4da] dark:text-[#171814] dark:hover:bg-white;
+	@apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink-2 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#f2f2f2] dark:text-[#141414] dark:hover:bg-white;
 }
 
 .btn-ghost {
-	@apply inline-flex items-center justify-center gap-2 rounded-full border border-rule bg-transparent px-4 py-2 text-sm text-ink-2 transition hover:border-ink-soft hover:bg-paper-2 disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#2a2b27] dark:text-[#d4cfc2] dark:hover:border-[#4a4b44] dark:hover:bg-[#20211d];
+	@apply inline-flex items-center justify-center gap-2 rounded-full border border-rule bg-transparent px-4 py-2 text-sm text-ink-2 transition hover:border-ink-soft hover:bg-paper-2 disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#2c2c2c] dark:text-[#cfcfcf] dark:hover:border-[#383838] dark:hover:bg-[#232323];
 }
 
 .btn-danger {

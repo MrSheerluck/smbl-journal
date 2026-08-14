@@ -35,7 +35,7 @@
 	}
 
 	:global(.dark) .read-only {
-		color: #e8e4da;
+		color: #f2f2f2;
 	}
 
 	.read-only :global(.tiptap) {

@@ -39,15 +39,15 @@
 </script>
 
 <main
-	class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-6 py-16 text-neutral-900 dark:text-neutral-100"
+	class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-6 py-16 text-ink dark:text-[#f2f2f2]"
 >
 	<header class="flex flex-col gap-1">
-		<p class="text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">set up your vault</p>
-		<h1 class="text-3xl font-semibold tracking-tight">create a passphrase</h1>
-		<p class="text-sm text-neutral-500">This unlocks your private journal. Choose it carefully.</p>
+		<p class="text-xs font-medium uppercase tracking-[0.2em] text-ink-soft">set up your vault</p>
+		<h1 class="font-display text-4xl font-medium leading-tight">create a passphrase</h1>
+		<p class="text-sm text-ink-soft">This unlocks your private journal. Choose it carefully.</p>
 	</header>
 
-	<details bind:open={open} class="group text-sm text-neutral-600 dark:text-neutral-400">
+	<details bind:open={open} class="group text-sm text-ink-soft dark:text-ink-soft">
 		<summary
 			class="flex cursor-pointer list-none flex-wrap items-center gap-x-1.5 [&::-webkit-details-marker]:hidden"
 		>
@@ -56,12 +56,12 @@
 				lose it, your journal cannot be recovered, ever.
 			</span>
 			<span
-				class="text-xs font-medium text-neutral-500 underline decoration-dotted underline-offset-2 group-open:text-neutral-900 dark:group-open:text-neutral-100"
+				class="text-xs font-medium text-ink-soft underline decoration-dotted underline-offset-2 group-open:text-ink dark:group-open:text-[#f2f2f2]"
 			>
 				{open ? 'Show less' : 'Learn more'}
 			</span>
 		</summary>
-		<div class="mt-2 space-y-1.5 border-l border-neutral-200 pl-4 text-xs text-neutral-500 dark:border-neutral-700">
+		<div class="mt-2 space-y-1.5 border-l border-rule pl-4 text-xs text-ink-soft dark:border-[#2c2c2c]">
 			<p>
 				Your entries are encrypted before they leave this browser, with a randomly generated
 				vault key (AES-256-GCM). We only ever store the encrypted ciphertext, so even we cannot
@@ -82,34 +82,34 @@
 
 	<form class="flex flex-col gap-4" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
 		<label class="flex flex-col gap-1.5 text-sm">
-			<span class="font-medium text-neutral-500">Passphrase</span>
+			<span class="font-medium text-ink-soft">Passphrase</span>
 			<input
 				bind:value={passphrase}
 				type="password"
 				autocomplete="new-password"
-				class="rounded-lg border border-neutral-300 bg-transparent px-3 py-2.5 outline-none transition focus:border-neutral-500 dark:border-neutral-700 dark:focus:border-neutral-400"
+				class="rounded-lg border border-rule bg-transparent px-3 py-2.5 outline-none transition focus:border-ink-soft dark:border-[#2c2c2c] dark:focus:border-thread-soft"
 			/>
 		</label>
 
 		{#if passphrase.length > 0}
 			<div class="flex items-center gap-2">
-				<div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+				<div class="h-1.5 flex-1 overflow-hidden rounded-full bg-rule dark:bg-[#232323]">
 					<div
 						class="h-full rounded-full transition-all duration-200 {colors[strength]}"
 						style:width={`${((strength + 1) / 4) * 100}%`}
 					></div>
 				</div>
-				<span class="w-10 text-right text-xs capitalize text-neutral-500">{labels[strength]}</span>
+				<span class="w-10 text-right text-xs capitalize text-ink-soft">{labels[strength]}</span>
 			</div>
 		{/if}
 
 		<label class="flex flex-col gap-1.5 text-sm">
-			<span class="font-medium text-neutral-500">Confirm passphrase</span>
+			<span class="font-medium text-ink-soft">Confirm passphrase</span>
 			<input
 				bind:value={confirm}
 				type="password"
 				autocomplete="new-password"
-				class="rounded-lg border border-neutral-300 bg-transparent px-3 py-2.5 outline-none transition focus:border-neutral-500 dark:border-neutral-700 dark:focus:border-neutral-400"
+				class="rounded-lg border border-rule bg-transparent px-3 py-2.5 outline-none transition focus:border-ink-soft dark:border-[#2c2c2c] dark:focus:border-thread-soft"
 			/>
 		</label>
 
@@ -124,7 +124,7 @@
 		<button
 			type="submit"
 			disabled={!canSubmit || submitting}
-			class="mt-2 rounded-lg bg-neutral-900 px-4 py-2.5 font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+			class="mt-2 rounded-lg bg-ink px-4 py-2.5 font-medium text-paper transition hover:bg-ink-2 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#f2f2f2] dark:text-[#141414] dark:hover:bg-paper-2"
 		>
 			{submitting ? 'Creating...' : 'Create vault'}
 		</button>

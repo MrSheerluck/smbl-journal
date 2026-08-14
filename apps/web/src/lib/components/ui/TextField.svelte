@@ -26,7 +26,7 @@
 </script>
 
 <label class="flex flex-col gap-1.5 text-sm">
-	<span class="font-medium text-neutral-500">{label}</span>
+	<span class="font-medium text-ink-soft">{label}</span>
 	<input
 		{name}
 		{type}
@@ -35,6 +35,6 @@
 		{inputmode}
 		{minlength}
 		{required}
-		class="rounded-lg border border-neutral-300 bg-transparent px-3 py-2.5 outline-none transition focus:border-neutral-500 dark:border-neutral-700 dark:focus:border-neutral-400 {large ? 'text-lg' : ''} {center ? 'text-center tracking-[0.3em]' : ''}"
+		class="rounded-lg border border-rule bg-transparent px-3 py-2.5 outline-none transition focus:border-ink-soft dark:border-[#2c2c2c] dark:focus:border-thread-soft {large ? 'text-lg' : ''} {center ? 'text-center tracking-[0.3em]' : ''}"
 	/>
 </label>

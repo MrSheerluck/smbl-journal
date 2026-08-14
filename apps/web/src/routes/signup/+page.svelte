@@ -21,11 +21,11 @@
 		<Button class="mt-2">Create account</Button>
 	</form>
 
-	<p class="text-center text-sm text-neutral-500">
+	<p class="text-center text-sm text-ink-soft">
 		Already have an account?
 		<a
 			href="/login"
-			class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+			class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 		>
 			Sign in
 		</a>

@@ -9,7 +9,7 @@
 }
 
 .dark .rich-editor .tiptap {
-	color: #e8e4da;
+	color: #f2f2f2;
 }
 
 .rich-editor .tiptap > * + * {
@@ -124,13 +124,13 @@
 }
 
 .dark .rich-editor .tiptap code {
-	background: #20211d;
+	background: #232323;
 	border-color: var(--color-rule-dark);
 }
 
 .rich-editor .tiptap pre {
-	background: #20211d;
-	color: #e8e4da;
+	background: #232323;
+	color: #f2f2f2;
 	border-radius: 0.75rem;
 	padding: 1rem 1.25rem;
 	overflow-x: auto;

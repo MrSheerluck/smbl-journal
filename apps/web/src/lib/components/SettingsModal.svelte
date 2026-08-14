@@ -78,20 +78,20 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
 	<button
 		type="button"
-		class="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+		class="absolute inset-0 bg-black/50 backdrop-blur-sm"
 		aria-label="Close settings"
 		onclick={onClose}
 	></button>
 
 	<div
-		class="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-rule bg-paper shadow-xl dark:border-rule-dark dark:bg-[#171814]"
+		class="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-rule bg-paper shadow-xl dark:border-rule-dark dark:bg-[#141414]"
 	>
 		<header class="flex items-center justify-between border-b border-rule px-6 py-4 dark:border-rule-dark">
 			<p class="eyebrow text-thread">settings</p>
 			<button
 				type="button"
 				onclick={onClose}
-				class="flex h-8 w-8 items-center justify-center rounded-lg text-ink-soft transition hover:bg-paper-2 hover:text-ink dark:hover:bg-[#20211d] dark:hover:text-[#e8e4da]"
+				class="flex h-8 w-8 items-center justify-center rounded-lg text-ink-soft transition hover:bg-paper-2 hover:text-ink dark:hover:bg-[#232323] dark:hover:text-[#f2f2f2]"
 				aria-label="Close settings"
 			>
 				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -106,7 +106,7 @@
 				<h2 class="font-display text-lg leading-tight">Appearance</h2>
 				<div class="mt-3 flex items-center justify-between gap-4">
 					<p class="text-sm text-ink-2">Theme</p>
-					<div class="flex rounded-full border border-rule bg-paper-2 p-0.5 dark:border-rule-dark dark:bg-[#1d1e1a]">
+					<div class="flex rounded-full border border-rule bg-paper-2 p-0.5 dark:border-rule-dark dark:bg-[#1b1b1b]">
 						{#each options as option}
 							<button
 								type="button"
@@ -115,8 +115,8 @@
 								class:bg-ink={theme.value === option.value}
 								class:text-paper={theme.value === option.value}
 								class:text-ink-soft={theme.value !== option.value}
-								class:dark:bg-[#e8e4da]={theme.value === option.value}
-								class:dark:text-[#171814]={theme.value === option.value}
+								class:dark:bg-[#f2f2f2]={theme.value === option.value}
+								class:dark:text-[#141414]={theme.value === option.value}
 							>
 								{option.label}
 							</button>
@@ -144,7 +144,7 @@
 							bind:value={current}
 							type="password"
 							autocomplete="current-password"
-							class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1d1e1a] dark:focus:border-thread-soft"
+							class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1b1b1b] dark:focus:border-thread-soft"
 						/>
 					</label>
 					<label class="flex flex-col gap-1.5 text-sm">
@@ -153,7 +153,7 @@
 							bind:value={next}
 							type="password"
 							autocomplete="new-password"
-							class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1d1e1a] dark:focus:border-thread-soft"
+							class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1b1b1b] dark:focus:border-thread-soft"
 						/>
 					</label>
 					<label class="flex flex-col gap-1.5 text-sm">
@@ -162,7 +162,7 @@
 							bind:value={confirm}
 							type="password"
 							autocomplete="new-password"
-							class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1d1e1a] dark:focus:border-thread-soft"
+							class="rounded-xl border border-rule bg-paper-2 px-3.5 py-2.5 outline-none transition focus:border-thread dark:border-rule-dark dark:bg-[#1b1b1b] dark:focus:border-thread-soft"
 						/>
 					</label>
 					{#if error}

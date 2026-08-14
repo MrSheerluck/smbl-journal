@@ -173,7 +173,7 @@
 	{/if}
 
 	{#if editor}
-	<div bind:this={bubbleEl} class="bubble-menu pointer-events-auto flex items-center gap-0.5 rounded-xl border border-rule bg-paper p-1 shadow-xl dark:border-rule-dark dark:bg-[#20211d]" hidden>
+	<div bind:this={bubbleEl} class="bubble-menu pointer-events-auto flex items-center gap-0.5 rounded-xl border border-rule bg-paper p-1 shadow-xl dark:border-rule-dark dark:bg-[#232323]" hidden>
 			<ToolButton size="sm" icon="bold" label="Bold" onclick={() => run((ed) => ed.chain().toggleBold().run())} />
 			<ToolButton size="sm" icon="italic" label="Italic" onclick={() => run((ed) => ed.chain().toggleItalic().run())} />
 			<ToolButton size="sm" icon="strike" label="Strikethrough" onclick={() => run((ed) => ed.chain().toggleStrike().run())} />

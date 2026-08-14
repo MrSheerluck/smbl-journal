@@ -14,7 +14,7 @@
 			<p class="mt-4 text-sm">
 				<a
 					href="/forgot-password"
-					class="font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+					class="font-medium text-ink underline underline-offset-2 dark:text-[#f2f2f2]"
 				>
 					Request a new link
 				</a>

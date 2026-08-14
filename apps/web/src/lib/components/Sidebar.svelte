@@ -31,13 +31,13 @@
 </script>
 
 <aside
-	class="flex h-full shrink-0 flex-col overflow-y-auto border-r border-rule py-5 transition-all duration-200 dark:border-rule-dark {collapsed ? 'w-16 bg-paper/60 dark:bg-[#171814]/60' : 'w-64 bg-paper-2/60 dark:bg-[#1d1e1a]/60'}"
+	class="flex h-full shrink-0 flex-col overflow-y-auto border-r border-rule py-5 transition-all duration-200 dark:border-rule-dark {collapsed ? 'w-16 bg-paper/60 dark:bg-[#141414]/60' : 'w-64 bg-paper-2/60 dark:bg-[#1b1b1b]/60'}"
 >
 	<div class="flex items-center justify-end gap-1 px-2.5">
 		<button
 			type="button"
 			onclick={toggle}
-			class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft transition hover:bg-paper hover:text-ink dark:hover:bg-[#2a2b27] dark:hover:text-[#e8e4da]"
+			class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft transition hover:bg-paper hover:text-ink dark:hover:bg-[#2c2c2c] dark:hover:text-[#f2f2f2]"
 			aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
 			title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
 		>
@@ -64,7 +64,7 @@
 			class:text-thread={item.href && isActive(item.href)}
 			class:text-ink-2={!item.href || !isActive(item.href)}
 			class:hover:bg-paper={!item.href || !isActive(item.href)}
-			class:dark:hover:bg-[#2a2b27]={!item.href || !isActive(item.href)}
+			class:dark:hover:bg-[#2c2c2c]={!item.href || !isActive(item.href)}
 		>
 			<span class="flex h-4 w-4 shrink-0 items-center justify-center">
 				{@html ICONS[item.icon]}
@@ -78,7 +78,7 @@
 	<button
 		type="button"
 		onclick={onOpenSettings}
-		class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition text-ink-2 hover:bg-paper dark:hover:bg-[#2a2b27]"
+		class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition text-ink-2 hover:bg-paper dark:hover:bg-[#2c2c2c]"
 		class:justify-center={collapsed}
 		class:px-1.5={collapsed}
 	>
