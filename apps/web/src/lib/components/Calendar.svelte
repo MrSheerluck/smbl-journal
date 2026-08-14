@@ -22,13 +22,11 @@
 		return `${y}-${pad(m + 1)}-${pad(d)}`;
 	}
 
-	// Which days have entries (real + sample), as a Set of "YYYY-MM-DD".
 	let entryDates = $state<Set<string>>(new Set());
 
 	const today = todayStr();
 	let selected = $state(today);
 
-	// View month (0-based month). Tracks the selected date's month by default.
 	let viewYear = $state(Number(today.slice(0, 4)));
 	let viewMonth = $state(Number(today.slice(5, 7)) - 1);
 
@@ -43,35 +41,18 @@
 	});
 
 	onMount(() => {
-		import('$lib/sample').then(({ SAMPLE_DAYS }) => {
-			entryDates = new Set([
-				...SAMPLE_DAYS.map((d) => d.date),
-				...fromSession()
-			]);
-		});
 		fetch('/api/entries')
 			.then((r) => (r.ok ? r.json() : []))
 			.then((list: { entry_date: string }[]) => {
-				entryDates = new Set([...entryDates, ...list.map((e) => e.entry_date)]);
-				sessionStorage.setItem('smbl.calendar', JSON.stringify(list.map((e) => e.entry_date)));
+				entryDates = new Set(list.map((e) => e.entry_date));
 			})
 			.catch(() => {});
 	});
-
-	function fromSession(): string[] {
-		try {
-			const raw = sessionStorage.getItem('smbl.calendar');
-			return raw ? (JSON.parse(raw) as string[]) : [];
-		} catch {
-			return [];
-		}
-	}
 
 	function daysInMonth(y: number, m: number): number {
 		return new Date(y, m + 1, 0).getDate();
 	}
 
-	// Array of cells; each is a date string or null (leading/trailing blank).
 	function cells(): (string | null)[] {
 		const first = new Date(viewYear, viewMonth, 1).getDay();
 		const total = daysInMonth(viewYear, viewMonth);

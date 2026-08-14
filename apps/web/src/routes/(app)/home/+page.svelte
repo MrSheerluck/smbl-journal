@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { vaultStatus, unlockVault, clearVault } from '$lib/vault';
+	import { vaultStatus, unlockVault, clearVault, resetVault } from '$lib/vault';
 	import { todayLocal, loadEntry, saveEntry } from '$lib/entries';
 	import RichTextEditor from '$lib/components/editor/RichTextEditor.svelte';
 	import ReadOnlyView from '$lib/components/editor/ReadOnlyView.svelte';
-	import { SAMPLE_DAYS } from '$lib/sample';
 
 	const MONTHS = [
 		'January', 'February', 'March', 'April', 'May', 'June',
@@ -16,11 +15,14 @@
 		return `${MONTHS[Number(m) - 1]} ${Number(d)}, ${y}`;
 	}
 
-	const sampleBodies = new Map(SAMPLE_DAYS.map((d) => [d.date, d.body]));
-
 	let passphrase = $state('');
 	let error = $state('');
 	let busy = $state(false);
+
+	let showReset = $state(false);
+	let resetConfirm = $state('');
+	let resetting = $state(false);
+	let resetError = $state('');
 
 	let body = $state('');
 	let loadFailed = $state(false);
@@ -39,7 +41,6 @@
 		return fromUrl && /^\d{4}-\d{2}-\d{2}$/.test(fromUrl) ? fromUrl : today;
 	}
 
-	// A future day is read-only (can't write the future); today and past days are writable.
 	const date = $derived(selectedDate());
 	const isFuture = $derived(date > today);
 
@@ -48,7 +49,7 @@
 		const d = selectedDate();
 		loadEntry(d)
 			.then((existing) => {
-				body = existing ?? sampleBodies.get(d) ?? '';
+				body = existing ?? '';
 				loadedDate = d;
 			})
 			.catch(() => (loadFailed = true));
@@ -68,6 +69,19 @@
 			error = 'Could not unlock your vault. Try again.';
 		} finally {
 			busy = false;
+		}
+	}
+
+	async function handleReset() {
+		if (resetting) return;
+		resetting = true;
+		resetError = '';
+		try {
+			await resetVault();
+			window.location.href = '/setup';
+		} catch {
+			resetError = 'Could not reset your vault. Try again.';
+			resetting = false;
 		}
 	}
 
@@ -139,6 +153,55 @@
 				<button type="submit" disabled={!passphrase || busy} class="btn-ink">
 					{busy ? 'Opening...' : 'Unlock'}
 				</button>
+
+				<div class="flex flex-col gap-2 border-t border-rule pt-4 dark:border-rule-dark">
+					{#if !showReset}
+						<button
+							type="button"
+							onclick={() => (showReset = true)}
+							class="text-sm text-ink-soft underline decoration-dotted underline-offset-2 transition hover:text-ink dark:hover:text-[#e8e4da]"
+						>
+							Forgot your passphrase?
+						</button>
+					{:else}
+						<div class="flex flex-col gap-2.5 rounded-xl border border-[#e0c4bc] bg-[#fbf3f0] p-3.5 dark:border-[#5a3c33] dark:bg-[#241b17]">
+							<p class="text-sm leading-relaxed text-[#7a3b2c] dark:text-[#e0a794]">
+								Starting a new vault is irreversible. Your current passphrase is the only key to your
+								existing entries — without it, they cannot be recovered. Resetting will
+								<strong>permanently delete</strong> every entry and begin a fresh journal.
+							</p>
+							<label class="flex flex-col gap-1.5 text-sm">
+								<span class="font-medium text-[#7a3b2c] dark:text-[#e0a794]">Type DELETE to confirm</span>
+								<input
+									bind:value={resetConfirm}
+									type="text"
+									autocomplete="off"
+									class="rounded-xl border border-[#e0c4bc] bg-transparent px-3.5 py-2.5 text-sm outline-none transition focus:border-[#a54a38] dark:border-[#5a3c33] dark:focus:border-[#e0a794]"
+								/>
+							</label>
+							{#if resetError}
+								<p class="text-xs text-[#a54a38]">{resetError}</p>
+							{/if}
+							<div class="flex items-center gap-2">
+								<button
+									type="button"
+									onclick={() => { showReset = false; resetConfirm = ''; resetError = ''; }}
+									class="btn-ghost flex-1"
+								>
+									Cancel
+								</button>
+								<button
+									type="button"
+									onclick={handleReset}
+									disabled={resetConfirm !== 'DELETE' || resetting}
+									class="btn-danger flex-1"
+								>
+									{resetting ? 'Resetting...' : 'Delete & start new'}
+								</button>
+							</div>
+						</div>
+					{/if}
+				</div>
 			</form>
 		</div>
 	{:else}

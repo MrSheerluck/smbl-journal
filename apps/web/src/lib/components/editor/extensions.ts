@@ -10,10 +10,6 @@ import { Highlight } from '@tiptap/extension-highlight';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { SlashCommand, type SlashMenuFactory } from './slash-command';
 
-/**
- * True when pasted plain text contains enough markdown syntax that we want to
- * parse it into rich text instead of inserting it verbatim.
- */
 export function looksLikeMarkdown(text: string): boolean {
 	if (/^(#{1,6}\s|>\s|[-*+]\s|\d+\.\s|\[[ xX]\]\s|```|~~~)/m.test(text)) return true;
 	if (/\[[^\]]*\]\([^)]*\)|(\*\*|__|~~|`)/.test(text)) return true;
@@ -52,15 +48,6 @@ export interface EditorExtensionsOptions {
 	slashMenu?: SlashMenuFactory;
 }
 
-/**
- * The full Tiptap extension set for the journal editor.
- *
- * Content is stored and exchanged as **markdown**; the editor always renders
- * WYSIWYG. StarterKit v3 already ships markdown-style input rules (headings,
- * lists, blockquote, hr, bold/italic/strike/code, code block), and the
- * `Markdown` extension provides `contentType: 'markdown'` parsing plus
- * `editor.getMarkdown()` serialization.
- */
 export function buildEditorExtensions({ placeholder, slashMenu }: EditorExtensionsOptions = {}) {
 	return [
 		StarterKit.configure({

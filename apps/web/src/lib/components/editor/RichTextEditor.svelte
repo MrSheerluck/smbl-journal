@@ -9,13 +9,10 @@
 	import ToolButton from './ToolButton.svelte';
 
 	interface Props {
-		/** Markdown content — applied on mount and whenever `reloadKey` changes. */
 		content?: string;
-		/** Bump to re-apply `content` (e.g. when switching entries). */
 		reloadKey?: string;
 		placeholder?: string;
 		autofocus?: boolean;
-		/** Fired (debounced) with the current markdown whenever the doc changes. */
 		onChange?: (markdown: string) => void;
 	}
 
@@ -30,9 +27,7 @@
 	let editorEl = $state<HTMLDivElement>();
 	let bubbleEl = $state<HTMLDivElement>();
 	let editor = $state<Editor | null>(null);
-	/** Bumped on every transaction so toolbar `isActive` states re-render. */
 	let version = $state(0);
-	/** True while the document is empty — used for the Notion-style "/" hint. */
 	let isEmpty = $state(true);
 	let focused = $state(false);
 

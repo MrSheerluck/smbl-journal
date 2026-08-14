@@ -21,7 +21,7 @@ use password::password;
 use password_reset::{password_reset_confirm, password_reset_request};
 use requests::Jwks;
 pub(crate) use session::auth_user;
-use session::{get_vault, logout, me, save_vault};
+use session::{get_vault, logout, me, reset_vault, save_vault};
 
 use signup::{signup, verify_email};
 
@@ -34,7 +34,7 @@ pub fn routes() -> Router<AppState> {
         .route("/auth/password-reset/request", post(password_reset_request))
         .route("/auth/password-reset/confirm", post(password_reset_confirm))
         .route("/auth/me", get(me))
-        .route("/auth/me/vault", get(get_vault).put(save_vault))
+        .route("/auth/me/vault", get(get_vault).put(save_vault).delete(reset_vault))
 }
 
 fn env(name: &str) -> String {

@@ -17,8 +17,6 @@ export function todayLocal(): string {
 }
 
 export async function saveEntry(date: string, body: string): Promise<void> {
-	// `body` is markdown (the editor always serializes to markdown; the server
-	// only ever sees the AES-GCM ciphertext of it).
 	const key = getVaultKey();
 	if (!key) throw new Error('Vault is locked');
 	const { iv, ciphertext } = await encryptText(key, body);
