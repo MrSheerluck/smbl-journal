@@ -2,16 +2,15 @@
 	import { page } from '$app/state';
 	import Calendar from './Calendar.svelte';
 
+	let { onOpenSettings }: { onOpenSettings?: () => void } = $props();
+
 	interface NavItem {
-		href: string;
+		href?: string;
 		label: string;
 		icon: string;
 	}
 
-	const items: NavItem[] = [
-		{ href: '/home', label: 'Today', icon: 'feather' },
-		{ href: '/settings', label: 'Settings', icon: 'gear' }
-	];
+	const items: NavItem[] = [{ href: '/home', label: 'Today', icon: 'feather' }];
 
 	const ICONS: Record<string, string> = {
 		feather:
@@ -55,27 +54,42 @@
 	</div>
 
 	<nav class="mt-6 flex flex-col gap-1 px-2.5">
-		{#each items as item (item.href)}
-			<a
-				href={item.href}
-				class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition"
-				class:justify-center={collapsed}
-				class:px-1.5={collapsed}
-				class:bg-thread-faint={isActive(item.href)}
-				class:text-thread={isActive(item.href)}
-				class:text-ink-2={!isActive(item.href)}
-				class:hover:bg-paper={!isActive(item.href)}
-				class:dark:hover:bg-[#2a2b27]={!isActive(item.href)}
-			>
-				<span class="flex h-4 w-4 shrink-0 items-center justify-center">
-					{@html ICONS[item.icon]}
-				</span>
-				{#if !collapsed}
-					<span>{item.label}</span>
-				{/if}
-			</a>
-		{/each}
-	</nav>
+	{#each items as item (item.label)}
+		<a
+			href={item.href}
+			class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition"
+			class:justify-center={collapsed}
+			class:px-1.5={collapsed}
+			class:bg-thread-faint={item.href && isActive(item.href)}
+			class:text-thread={item.href && isActive(item.href)}
+			class:text-ink-2={!item.href || !isActive(item.href)}
+			class:hover:bg-paper={!item.href || !isActive(item.href)}
+			class:dark:hover:bg-[#2a2b27]={!item.href || !isActive(item.href)}
+		>
+			<span class="flex h-4 w-4 shrink-0 items-center justify-center">
+				{@html ICONS[item.icon]}
+			</span>
+			{#if !collapsed}
+				<span>{item.label}</span>
+			{/if}
+		</a>
+	{/each}
+
+	<button
+		type="button"
+		onclick={onOpenSettings}
+		class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition text-ink-2 hover:bg-paper dark:hover:bg-[#2a2b27]"
+		class:justify-center={collapsed}
+		class:px-1.5={collapsed}
+	>
+		<span class="flex h-4 w-4 shrink-0 items-center justify-center">
+			{@html ICONS['gear']}
+		</span>
+		{#if !collapsed}
+			<span>Settings</span>
+		{/if}
+	</button>
+</nav>
 
 	{#if !collapsed}
 		<div class="mt-auto">

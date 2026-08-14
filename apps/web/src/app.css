@@ -48,7 +48,13 @@
 	background: var(--color-thread-faint);
 }
 .dark ::selection {
-	background: rgba(79, 138, 120, 0.35);
+	background: rgba(143, 192, 176, 0.35);
+}
+
+.dark {
+	--color-thread: #74b39f;
+	--color-thread-soft: #8fc0b0;
+	--color-thread-faint: #233832;
 }
 
 .eyebrow {
