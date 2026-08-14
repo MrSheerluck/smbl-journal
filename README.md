@@ -1,5 +1,7 @@
 # smbl journal
 
+![smbl journal](smbl-journal.png)
+
 A private, end-to-end encrypted journal and its open source and **free to use forever**.
 
 The complete text-based journal is free, no limits. Paid plans (if they come) will cover extras like attachments and rich media
@@ -95,19 +97,6 @@ browser never leaves our origin during auth.
 - **DNS**: `journal.smbl.dev` → Cloudflare Worker (already in `wrangler.jsonc`);
   `api.smbl.dev` → Hetzner VPS (Caddy TLS).
 - **HTTPS everywhere** — WorkOS rejects `http` redirect URIs in production.
-
-## Status
-
-**Done:**
-- Phases 0–2: workspace, landing + waitlist, full WorkOS auth via the BFF (self-hosted
-  signup / login / email-verification / password-reset; logout also revokes the WorkOS
-  session server-side).
-- Phase 3 core: client-side vault setup — first login redirects to `/setup` (passphrase creation,
-  entropy meter, E2EE explainer), the wrapped vault key is persisted via the BFF, and
-  `/home` is a guarded blank page. Returning users skip setup (`/setup` ↔ `/home` routing by
-  `vault_setup`).
-
-**Not yet built:** entries (Phase 4), archive/settings (Phase 5), deployment (Phase 6).
 
 
 ## LICENSE
