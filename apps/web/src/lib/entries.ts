@@ -46,6 +46,13 @@ export async function loadEntry(date: string): Promise<string | null> {
 	return decryptText(key, base64ToBytes(entry.body_iv), base64ToBytes(entry.body_ciphertext));
 }
 
+export async function listEntryDates(): Promise<string[]> {
+	const res = await fetch('/api/entries');
+	if (!res.ok) throw new Error('Failed to list entries');
+	const entries = (await res.json()) as { id: string; entry_date: string }[];
+	return entries.map((e) => e.entry_date).sort().reverse();
+}
+
 export async function deleteEntry(date: string): Promise<void> {
 	const res = await fetch(`/api/entries?date=${encodeURIComponent(date)}`, { method: 'DELETE' });
 	if (!res.ok && res.status !== 404) throw new Error('Failed to delete entry');

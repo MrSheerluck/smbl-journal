@@ -182,6 +182,23 @@ pub async fn get_entry(
     ))
 }
 
+pub async fn list_entry_dates(conn: &Connection, user_id: &str) -> Option<Vec<(String, String)>> {
+    let mut rows = conn
+        .query(
+            "SELECT id, entry_date FROM entries WHERE user_id = ?1 ORDER BY entry_date DESC",
+            libsql::params![user_id],
+        )
+        .await
+        .ok()?;
+    let mut dates = Vec::new();
+    while let Ok(Some(row)) = rows.next().await {
+        let id = row.get::<String>(0).ok()?;
+        let date = row.get::<String>(1).ok()?;
+        dates.push((id, date));
+    }
+    Some(dates)
+}
+
 pub async fn delete_entry(
     conn: &Connection,
     user_id: &str,

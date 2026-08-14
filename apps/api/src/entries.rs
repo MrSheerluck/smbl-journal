@@ -81,11 +81,7 @@ pub async fn get_entry(
         return unauthorized();
     };
     let Some(date) = query.date else {
-        return (
-            StatusCode::BAD_REQUEST,
-            Json(json!({"error": "missing date"})),
-        )
-            .into_response();
+        return list_entries(State(state), headers).await;
     };
     let Some(conn) = &state.conn else {
         return unavailable();
@@ -100,6 +96,33 @@ pub async fn get_entry(
         }))
         .into_response(),
         None => (StatusCode::NOT_FOUND, Json(json!({"error": "no entry"}))).into_response(),
+    }
+}
+
+pub async fn list_entries(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Response {
+    let Some(claims) = auth_user(&headers).await else {
+        return unauthorized();
+    };
+    let Some(conn) = &state.conn else {
+        return unavailable();
+    };
+
+    match db::list_entry_dates(conn, &claims.sub).await {
+        Some(dates) => Json(
+            dates
+                .into_iter()
+                .map(|(id, entry_date)| json!({ "id": id, "entry_date": entry_date }))
+                .collect::<Vec<_>>(),
+        )
+        .into_response(),
+        None => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({"error": "failed to list entries"})),
+        )
+            .into_response(),
     }
 }
 
