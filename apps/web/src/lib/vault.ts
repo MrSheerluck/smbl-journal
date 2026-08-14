@@ -2,7 +2,8 @@ import { writable } from 'svelte/store';
 import {
 	deriveKey,
 	generateVaultKey,
-	wrapVaultKey,
+  wrapVaultKey,
+  unwrapVaultKey,
 	DEFAULT_KDF,
 	bytesToBase64,
 	base64ToBytes,
@@ -74,6 +75,23 @@ export async function createVault(passphrase: string): Promise<void> {
 		params: DEFAULT_KDF
 	});
 }
+
+
+export async function unlockVault(passphrase: string): Promise<boolean> {
+	const res = await fetch('/api/vault');
+	if (!res.ok) throw new Error('No vault found');
+	const data: VaultPayload = await res.json();
+	const derived = await deriveKey(passphrase, base64ToBytes(data.salt), data.params);
+	try {
+		const key = await unwrapVaultKey(derived, base64ToBytes(data.iv), base64ToBytes(data.wrapped));
+		writeStored(key);
+		vaultStatus.set('unlocked');
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 
 export function getVaultKey(): Uint8Array | null {
 	return readStored();
