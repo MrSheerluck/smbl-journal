@@ -10,5 +10,8 @@
 	},
 	"dependencies": {
 		"@noble/hashes": "^1.8.0"
+	},
+	"devDependencies": {
+		"@types/node": "^26.2.0"
 	}
 }

@@ -1,5 +1,6 @@
 mod auth;
 mod db;
+mod entries;
 mod routes;
 mod state;
 
@@ -35,6 +36,7 @@ async fn main() {
         .route("/health", get(routes::health))
         .route("/api/waitlist", post(routes::waitlist))
         .merge(auth::routes())
+        .merge(entries::routes())
         .with_state(AppState { conn })
         .layer(cors_layer())
         .layer(TraceLayer::new_for_http());
@@ -70,6 +72,6 @@ fn cors_layer() -> CorsLayer {
     tracing::info!("cors origins: {origins:?}");
     CorsLayer::new()
         .allow_origin(AllowOrigin::list(origins))
-        .allow_methods([Method::GET, Method::POST])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE])
         .allow_headers(Any)
 }

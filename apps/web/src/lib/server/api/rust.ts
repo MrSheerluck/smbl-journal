@@ -36,9 +36,10 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T | 
 	}
 }
 
-export function postJson<T>(path: string, body: unknown): Promise<T | ApiError> {
-	return request<T>(path, { method: 'POST', body });
+export function postJson<T>(path: string, body: unknown, token?: string): Promise<T | ApiError> {
+	return request<T>(path, { method: 'POST', body, token });
 }
+
 
 export function putJson<T>(path: string, body: unknown, token: string): Promise<T | ApiError> {
 	return request<T>(path, { method: 'PUT', body, token });
@@ -46,4 +47,8 @@ export function putJson<T>(path: string, body: unknown, token: string): Promise<
 
 export function getJson<T>(path: string, token: string): Promise<T | ApiError> {
 	return request<T>(path, { token });
+}
+
+export function deleteRequest<T>(path: string, token: string): Promise<T | ApiError> {
+	return request<T>(path, { method: 'DELETE', token });
 }

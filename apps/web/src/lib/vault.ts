@@ -1,17 +1,53 @@
+import { writable } from 'svelte/store';
 import {
 	deriveKey,
 	generateVaultKey,
-	wrapVaultKey,
-	DEFAULT_KDF
+  wrapVaultKey,
+  unwrapVaultKey,
+	DEFAULT_KDF,
+	bytesToBase64,
+	base64ToBytes,
+	type KdfParams
 } from '@smbl/shared';
 
 const VAULT_KEY = 'smbl.vaultKey';
+const CHANNEL = 'smbl.vault';
+
+export type VaultStatus = 'locked' | 'unlocked';
 
 export interface VaultPayload {
 	wrapped: string;
 	iv: string;
 	salt: string;
-	params: unknown;
+	params: KdfParams;
+}
+
+function readStored(): Uint8Array | null {
+	if (typeof window === 'undefined') return null;
+	const raw = sessionStorage.getItem(VAULT_KEY);
+	return raw ? base64ToBytes(raw) : null;
+}
+
+function writeStored(bytes: Uint8Array): void {
+	sessionStorage.setItem(VAULT_KEY, bytesToBase64(bytes));
+}
+
+export const vaultStatus = writable<VaultStatus>(readStored() ? 'unlocked' : 'locked');
+
+let channel: BroadcastChannel | null = null;
+if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+	channel = new BroadcastChannel(CHANNEL);
+	channel.onmessage = (e) => {
+		const data = e.data as { type?: string; value?: string } | null;
+		if (data?.type === 'request') {
+			const raw = sessionStorage.getItem(VAULT_KEY);
+			if (raw) channel?.postMessage({ type: 'key', value: raw });
+		} else if (data?.type === 'key' && data.value) {
+			sessionStorage.setItem(VAULT_KEY, data.value);
+			vaultStatus.set('unlocked');
+		}
+	};
+	if (!readStored()) channel.postMessage({ type: 'request' });
 }
 
 async function saveVault(payload: VaultPayload): Promise<void> {
@@ -23,26 +59,14 @@ async function saveVault(payload: VaultPayload): Promise<void> {
 	if (!res.ok) throw new Error('Failed to save vault');
 }
 
-function bytesToBase64(bytes: Uint8Array): string {
-	let bin = '';
-	for (const b of bytes) bin += String.fromCharCode(b);
-	return btoa(bin);
-}
-
-function base64ToBytes(b64: string): Uint8Array {
-	const bin = atob(b64);
-	const bytes = new Uint8Array(bin.length);
-	for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-	return bytes;
-}
-
 export async function createVault(passphrase: string): Promise<void> {
 	const vaultKey = generateVaultKey();
 	const salt = crypto.getRandomValues(new Uint8Array(16));
 	const derived = await deriveKey(passphrase, salt, DEFAULT_KDF);
 	const { iv, ciphertext } = await wrapVaultKey(vaultKey, derived);
 
-	sessionStorage.setItem(VAULT_KEY, bytesToBase64(vaultKey));
+	writeStored(vaultKey);
+	vaultStatus.set('unlocked');
 
 	await saveVault({
 		wrapped: bytesToBase64(ciphertext),
@@ -52,11 +76,29 @@ export async function createVault(passphrase: string): Promise<void> {
 	});
 }
 
+
+export async function unlockVault(passphrase: string): Promise<boolean> {
+	const res = await fetch('/api/vault');
+	if (!res.ok) throw new Error('No vault found');
+	const data: VaultPayload = await res.json();
+	const derived = await deriveKey(passphrase, base64ToBytes(data.salt), data.params);
+	try {
+		const key = await unwrapVaultKey(derived, base64ToBytes(data.iv), base64ToBytes(data.wrapped));
+		writeStored(key);
+		vaultStatus.set('unlocked');
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+
 export function getVaultKey(): Uint8Array | null {
-	const raw = sessionStorage.getItem(VAULT_KEY);
-	return raw ? base64ToBytes(raw) : null;
+	return readStored();
 }
 
 export function clearVault(): void {
+	if (typeof window === 'undefined') return;
 	sessionStorage.removeItem(VAULT_KEY);
+	vaultStatus.set('locked');
 }
