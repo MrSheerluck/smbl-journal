@@ -6,6 +6,11 @@
 <main
 	class="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center"
 >
+	<img
+		src="/smbl-logo.png"
+		alt="SMBL"
+		class="h-20 w-20 rounded-2xl object-contain shadow-sm"
+	/>
 	<p class="text-xs font-medium uppercase tracking-[0.2em] text-ink-soft">smbl journal</p>
 	<h1 class="max-w-xl font-display text-5xl font-medium leading-tight sm:text-6xl">
 		a private place to write.
