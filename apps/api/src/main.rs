@@ -73,6 +73,6 @@ fn cors_layer() -> CorsLayer {
     tracing::info!("cors origins: {origins:?}");
     CorsLayer::new()
         .allow_origin(AllowOrigin::list(origins))
-        .allow_methods([Method::GET, Method::POST, Method::DELETE])
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
         .allow_headers(Any)
 }
