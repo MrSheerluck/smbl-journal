@@ -45,6 +45,8 @@
 	let exportError = $state('');
 	let exportLocked = $state(false);
 
+	let confirmDelete = $state(false);
+
 	async function handleExport() {
 		if (exporting) return;
 		if (!getVaultKey()) {
@@ -329,6 +331,31 @@
 				<form method="POST" action="/auth/logout" onsubmit={() => clearVault()}>
 					<button type="submit" class="btn-danger">Sign out</button>
 				</form>
+			</div>
+
+			<div class="mt-6 rounded-2xl border border-[#a54a38]/30 bg-[#a54a38]/5 p-5 dark:border-[#a54a38]/40 dark:bg-[#a54a38]/10">
+				<div>
+					<h2 class="font-display text-lg leading-tight text-[#a54a38]">Delete account</h2>
+					<p class="mt-1 text-sm text-ink-2">
+						Permanently delete your account and all of your journal entries. This cannot be
+						undone, and the passphrase key that unlocks your data is removed from this device.
+					</p>
+				</div>
+				{#if confirmDelete}
+					<div class="mt-3 flex flex-wrap items-center gap-3">
+						<p class="text-sm text-ink-2">Are you sure? This cannot be undone.</p>
+						<form method="POST" action="/auth/delete-account" onsubmit={() => clearVault()}>
+							<button type="submit" class="btn-danger">Yes, delete my account</button>
+						</form>
+						<button type="button" onclick={() => (confirmDelete = false)} class="btn-ghost">
+							Cancel
+						</button>
+					</div>
+				{:else}
+					<button type="button" onclick={() => (confirmDelete = true)} class="btn-danger mt-3">
+						Delete account
+					</button>
+				{/if}
 			</div>
 
 			<div class="mt-6 rounded-2xl border border-rule bg-paper-2 p-5 dark:border-rule-dark dark:bg-[#1b1b1b]">

@@ -210,3 +210,22 @@ pub async fn reset_user(
     .await?;
     Ok(())
 }
+
+pub async fn delete_account(
+    conn: &Connection,
+    workos_id: &str,
+) -> Result<(), libsql::Error> {
+    let tx = conn.transaction().await?;
+    tx.execute(
+        "DELETE FROM entries WHERE user_id = ?1",
+        libsql::params![workos_id],
+    )
+    .await?;
+    tx.execute(
+        "DELETE FROM users WHERE workos_id = ?1",
+        libsql::params![workos_id],
+    )
+    .await?;
+    tx.commit().await?;
+    Ok(())
+}
