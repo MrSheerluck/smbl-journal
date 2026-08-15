@@ -41,9 +41,9 @@ export const actions: Actions = {
 		}
 
 		const result = await verifyEmail(code, pendingToken);
-		cookies.delete(PENDING_COOKIE, { path: '/' });
 
 		if ('access_token' in result) {
+			cookies.delete(PENDING_COOKIE, { path: '/' });
 			setSessionCookie(cookies, result);
 			throw redirect(303, result.vault_setup ? '/home' : '/setup');
 		}

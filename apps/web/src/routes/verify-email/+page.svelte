@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import AuthShell from '$lib/components/ui/AuthShell.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -7,6 +8,8 @@
 	import TextField from '$lib/components/ui/TextField.svelte';
 
 	let { form, data } = $props();
+
+	let submitting = $state(false);
 
 	onMount(() => {
 		if (data.status === 'verify') {
@@ -35,7 +38,17 @@
 		title="enter the code"
 		subtitle="We sent a code to your email. Enter it below to finish creating your account."
 	>
-		<form method="POST" class="flex flex-col gap-4">
+		<form
+			method="POST"
+			class="flex flex-col gap-4"
+			use:enhance={({}) => {
+				submitting = true;
+				return async ({ update }) => {
+					await update();
+					submitting = false;
+				};
+			}}
+		>
 			<input type="hidden" name="email" value={data.email} />
 			<TextField
 				label="Verification code"
@@ -50,7 +63,9 @@
 
 			<FormError message={form?.error} />
 
-			<Button class="mt-2">Verify</Button>
+			<Button disabled={submitting} class="mt-2">
+				{submitting ? 'Verifying\u2026' : 'Verify'}
+			</Button>
 		</form>
 
 		<p class="text-center text-sm text-ink-soft">
