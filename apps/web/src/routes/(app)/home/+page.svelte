@@ -33,6 +33,7 @@
 	let saveStatus = $state<SaveStatus>('idle');
 	let saveTimer: ReturnType<typeof setTimeout> | undefined;
 	let saveDirty = false;
+	let retryAttempt = 0;
 
 	const today = todayLocal();
 
@@ -46,7 +47,7 @@
 
 	$effect(() => {
 		if ($vaultStatus !== 'unlocked') return;
-		void prefetchSurroundingMonths();
+		prefetchSurroundingMonths().catch(() => {});
 		const d = selectedDate();
 		loadEntry(d)
 			.then((existing) => {
@@ -90,6 +91,7 @@
 		body = md;
 		saveDirty = true;
 		saveStatus = 'idle';
+		retryAttempt = 0;
 		clearTimeout(saveTimer);
 		saveTimer = setTimeout(() => void autosave(), 800);
 	}
@@ -101,14 +103,32 @@
 		try {
 			await saveEntry(date, body);
 			saveStatus = 'saved';
+			retryAttempt = 0;
 		} catch {
 			saveDirty = true;
 			saveStatus = 'idle';
-			error = 'Autosave failed. Your words are safe here — keep typing.';
+			error = 'Autosave failed. Retrying...';
+			// Retry with capped exponential backoff so a transient failure (e.g. a
+			// 500 from the DB) never strands unsaved text, even if the user stops
+			// typing.
+			retryAttempt += 1;
+			const delay = Math.min(800 * 2 ** retryAttempt, 15000);
+			clearTimeout(saveTimer);
+			saveTimer = setTimeout(() => void autosave(), delay);
 		}
 		setTimeout(() => {
 			if (saveStatus === 'saved') saveStatus = 'idle';
 		}, 1800);
+	}
+
+	if (typeof window !== 'undefined') {
+		const flush = () => {
+			if (saveDirty && saveStatus !== 'saving') void autosave();
+		};
+		window.addEventListener('pagehide', flush);
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'hidden') flush();
+		});
 	}
 
 	function statusLabel(s: SaveStatus): string {

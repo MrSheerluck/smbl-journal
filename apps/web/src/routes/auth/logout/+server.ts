@@ -1,4 +1,4 @@
-import { SESSION_COOKIE, revokeSession } from '$lib/server/api';
+import { REFRESH_COOKIE, SESSION_COOKIE, revokeSession } from '$lib/server/api';
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
 	try {
@@ -23,6 +23,7 @@ export async function POST({ cookies }) {
 	}
 
 	cookies.delete(SESSION_COOKIE, { path: '/' });
+	cookies.delete(REFRESH_COOKIE, { path: '/' });
 
 	return new Response(null, { status: 303, headers: { location: '/login' } });
 }

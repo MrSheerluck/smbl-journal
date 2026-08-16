@@ -91,14 +91,25 @@ export async function decryptText(
 	return new TextDecoder().decode(decrypted);
 }
 
+const B64_RE = /^[A-Za-z0-9+/]*={0,2}$/;
+
 export function bytesToBase64(bytes: Uint8Array): string {
 	let bin = '';
-	for (const b of bytes) bin += String.fromCharCode(b);
+	// Chunk so we never build one huge string or exceed apply/spread limits on
+	// very long journal entries.
+	const CHUNK = 0x4000;
+	for (let i = 0; i < bytes.length; i += CHUNK) {
+		bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
+	}
 	return btoa(bin);
 }
 
 export function base64ToBytes(b64: string): Uint8Array {
-	const bin = atob(b64);
+	const cleaned = b64.replace(/[\r\n]+/g, '').trim();
+	if (cleaned.length === 0 || cleaned.length % 4 !== 0 || !B64_RE.test(cleaned)) {
+		throw new Error('invalid base64');
+	}
+	const bin = atob(cleaned);
 	const bytes = new Uint8Array(bin.length);
 	for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
 	return bytes;

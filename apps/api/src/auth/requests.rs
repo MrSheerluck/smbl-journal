@@ -24,6 +24,11 @@ pub struct RevokeSessionRequest {
 }
 
 #[derive(Deserialize)]
+pub struct RefreshRequest {
+    pub refresh_token: String,
+}
+
+#[derive(Deserialize)]
 pub struct PasswordResetRequest {
     pub email: String,
 }

@@ -25,7 +25,12 @@ export interface VaultPayload {
 function readStored(): Uint8Array | null {
 	if (typeof window === 'undefined') return null;
 	const raw = sessionStorage.getItem(VAULT_KEY);
-	return raw ? base64ToBytes(raw) : null;
+	if (!raw) return null;
+	try {
+		return base64ToBytes(raw);
+	} catch {
+		return null;
+	}
 }
 
 function writeStored(bytes: Uint8Array): void {

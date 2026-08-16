@@ -54,7 +54,12 @@ export async function loadEntry(date: string): Promise<string | null> {
 	if (res.status === 404) return null;
 	if (!res.ok) throw new Error('Failed to load entry');
 	const entry = (await res.json()) as Entry;
-	const text = await decryptText(key, base64ToBytes(entry.body_iv), base64ToBytes(entry.body_ciphertext));
+	let text: string;
+	try {
+		text = await decryptText(key, base64ToBytes(entry.body_iv), base64ToBytes(entry.body_ciphertext));
+	} catch {
+		throw new Error('Entry could not be decoded');
+	}
 	entryCache.set(date, text);
 	return text;
 }
@@ -75,8 +80,12 @@ export async function prefetchMonthRange(start: string, end: string): Promise<vo
 	if (!res.ok) return;
 	const entries = (await res.json()) as Entry[];
 	for (const e of entries) {
-		const text = await decryptText(key, base64ToBytes(e.body_iv), base64ToBytes(e.body_ciphertext));
-		entryCache.set(e.entry_date, text);
+		try {
+			const text = await decryptText(key, base64ToBytes(e.body_iv), base64ToBytes(e.body_ciphertext));
+			entryCache.set(e.entry_date, text);
+		} catch {
+			// A corrupt row must not abort prefetching the rest of the month.
+		}
 	}
 }
 

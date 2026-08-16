@@ -9,17 +9,20 @@ use std::time::{Duration, Instant};
 
 use axum::{
     Json, Router,
+    extract::State,
+    http::StatusCode,
     response::{IntoResponse, Response},
     routing::{get, post},
 };
 use serde_json::json;
 use tokio::sync::RwLock;
+use workos::user_management::AuthenticateWithRefreshTokenParams;
 
 use crate::{db, state::AppState};
 
 use password::password;
 use password_reset::{password_reset_confirm, password_reset_request};
-use requests::Jwks;
+use requests::{Jwks, RefreshRequest};
 pub(crate) use session::auth_user;
 use session::{delete_account, get_vault, logout, me, reset_vault, save_vault};
 
@@ -30,6 +33,7 @@ pub fn routes() -> Router<AppState> {
         .route("/auth/password", post(password))
         .route("/auth/signup", post(signup))
         .route("/auth/verify", post(verify_email))
+        .route("/auth/refresh", post(refresh))
         .route("/auth/logout", post(logout))
         .route("/auth/password-reset/request", post(password_reset_request))
         .route("/auth/password-reset/confirm", post(password_reset_confirm))
@@ -55,6 +59,7 @@ async fn session_response(
     let workos_id = resp.user.id.clone();
     let email = resp.user.email.clone();
     let access_token = resp.access_token.expose().to_string();
+    let refresh_token = resp.refresh_token.expose().to_string();
 
     if let Some(conn) = state.connection() {
         if let Err(e) = db::upsert_user(&conn, &workos_id, &email).await {
@@ -72,11 +77,31 @@ async fn session_response(
 
     Json(json!({
         "access_token": access_token,
+        "refresh_token": refresh_token,
         "workos_id": workos_id,
         "email": email,
         "vault_setup": vault_setup
     }))
     .into_response()
+}
+
+async fn refresh(State(state): State<AppState>, Json(req): Json<RefreshRequest>) -> Response {
+    let params = AuthenticateWithRefreshTokenParams::new(req.refresh_token);
+    match workos_client()
+        .user_management()
+        .authenticate_with_refresh_token(params)
+        .await
+    {
+        Ok(resp) => session_response(&state, &resp).await,
+        Err(e) => {
+            tracing::error!("workos refresh failed: {e}");
+            (
+                StatusCode::UNAUTHORIZED,
+                Json(json!({ "error": "refresh failed" })),
+            )
+                .into_response()
+        }
+    }
 }
 
 fn workos_error(err: &workos::Error) -> Response {

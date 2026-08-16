@@ -2,6 +2,7 @@ import { env } from '$env/dynamic/private';
 import { postJson, type ApiError } from './rust';
 
 export const SESSION_COOKIE = 'smbl.session';
+export const REFRESH_COOKIE = 'smbl.refresh';
 export const PENDING_COOKIE = 'smbl.pending';
 
 export interface Session {
@@ -12,6 +13,7 @@ export interface Session {
 
 export interface SessionResult extends Session {
 	access_token: string;
+	refresh_token: string;
 }
 
 export interface SignupResult {
@@ -34,6 +36,15 @@ export function setSessionCookie(
 		path: '/',
 		maxAge: 3600
 	});
+	if (result.refresh_token) {
+		cookies.set(REFRESH_COOKIE, result.refresh_token, {
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: secureCookies(),
+			path: '/',
+			maxAge: 604800
+		});
+	}
 }
 
 export function setPendingCookie(cookies: import('@sveltejs/kit').Cookies, token: string) {
