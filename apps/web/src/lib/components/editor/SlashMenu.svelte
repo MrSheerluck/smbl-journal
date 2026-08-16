@@ -56,7 +56,7 @@
 
 <div
 	bind:this={listEl}
-	class="max-h-72 w-64 overflow-y-auto rounded-xl border border-rule bg-paper-2 p-1.5 shadow-xl dark:border-[#2c2c2c] dark:bg-[#1b1b1b]"
+	class="max-h-72 w-64 max-w-[calc(100vw-1.5rem)] overflow-y-auto rounded-xl border border-rule bg-paper-2 p-1.5 shadow-xl dark:border-[#2c2c2c] dark:bg-[#1b1b1b]"
 	role="listbox"
 	aria-label="Insert menu"
 >
