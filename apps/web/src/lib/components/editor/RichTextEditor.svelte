@@ -138,7 +138,7 @@
 </script>
 
 <div class="rich-editor relative flex h-full min-h-0 flex-col">
-	<div class="toolbar flex shrink-0 flex-wrap items-center gap-0.5 border-b border-rule px-2 py-1.5 dark:border-rule-dark" data-version={version}>
+	<div class="toolbar flex shrink-0 items-center gap-0.5 overflow-x-auto border-b border-rule px-2 py-1.5 lg:flex-wrap lg:overflow-x-visible dark:border-rule-dark" data-version={version}>
 		<ToolButton icon="undo" label="Undo" onclick={() => run((ed) => ed.chain().undo().run())} disabled={!editor?.can().undo()} />
 		<ToolButton icon="redo" label="Redo" onclick={() => run((ed) => ed.chain().redo().run())} disabled={!editor?.can().redo()} />
 		<div class="mx-1 h-5 w-px bg-rule dark:bg-rule-dark"></div>

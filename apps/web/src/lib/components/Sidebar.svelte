@@ -2,7 +2,12 @@
 	import { page } from '$app/state';
 	import Calendar from './Calendar.svelte';
 
-	let { onOpenSettings }: { onOpenSettings?: () => void } = $props();
+	interface Props {
+		open?: boolean;
+		onClose?: () => void;
+		onOpenSettings?: () => void;
+	}
+	let { open = false, onClose, onOpenSettings }: Props = $props();
 
 	interface NavItem {
 		href?: string;
@@ -28,16 +33,40 @@
 	function toggle() {
 		collapsed = !collapsed;
 	}
+
+	function handleNav() {
+		onClose?.();
+	}
 </script>
 
+{#if open}
+	<button
+		type="button"
+		class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+		aria-label="Close menu"
+		onclick={handleNav}
+	></button>
+{/if}
+
 <aside
-	class="flex h-full shrink-0 flex-col overflow-y-auto border-r border-rule py-5 transition-all duration-200 dark:border-rule-dark {collapsed ? 'w-16 bg-paper/60 dark:bg-[#141414]/60' : 'w-64 bg-paper-2/60 dark:bg-[#1b1b1b]/60'}"
+	class="fixed inset-y-0 left-0 z-50 flex h-full shrink-0 flex-col overflow-y-auto border-r border-rule transition-transform duration-200 lg:static lg:z-auto lg:transition-none dark:border-rule-dark {collapsed ? 'w-16 bg-paper/60 dark:bg-[#141414]/60' : 'w-64 bg-paper-2/60 dark:bg-[#1b1b1b]/60'} {open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}"
 >
-	<div class="flex items-center justify-end gap-1 px-2.5">
+	<div class="flex items-center justify-between px-2.5 lg:justify-end lg:gap-1">
+		<button
+			type="button"
+			onclick={handleNav}
+			class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft transition hover:bg-paper hover:text-ink lg:hidden dark:hover:bg-[#2c2c2c] dark:hover:text-[#f2f2f2]"
+			aria-label="Close menu"
+		>
+			<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<line x1="18" y1="6" x2="6" y2="18" />
+				<line x1="6" y1="6" x2="18" y2="18" />
+			</svg>
+		</button>
 		<button
 			type="button"
 			onclick={toggle}
-			class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft transition hover:bg-paper hover:text-ink dark:hover:bg-[#2c2c2c] dark:hover:text-[#f2f2f2]"
+			class="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft transition hover:bg-paper hover:text-ink lg:flex dark:hover:bg-[#2c2c2c] dark:hover:text-[#f2f2f2]"
 			aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
 			title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
 		>
@@ -57,6 +86,7 @@
 	{#each items as item (item.label)}
 		<a
 			href={item.href}
+			onclick={handleNav}
 			class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition"
 			class:justify-center={collapsed}
 			class:px-1.5={collapsed}
@@ -77,7 +107,10 @@
 
 	<button
 		type="button"
-		onclick={onOpenSettings}
+		onclick={() => {
+			handleNav();
+			onOpenSettings?.();
+		}}
 		class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition text-ink-2 hover:bg-paper dark:hover:bg-[#2c2c2c]"
 		class:justify-center={collapsed}
 		class:px-1.5={collapsed}
