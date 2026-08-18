@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::sync::{Arc, OnceLock};
+
 use axum::{
     Json,
     extract::State,
@@ -6,6 +9,7 @@ use axum::{
 };
 use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header};
 use serde_json::json;
+use tokio::sync::RwLock;
 
 use crate::{db, state::AppState};
 
@@ -13,11 +17,30 @@ use super::fetch_jwks;
 use super::requests::{Claims, RevokeSessionRequest, VaultPayload};
 use super::workos_client;
 
+// Parsing an RSA public key from base64 components on every request is
+// relatively expensive. Cache the decoded key per `kid` (WorkOS rotates keys
+// rarely) so hot-path auth only pays for the signature verification itself.
+static DECODE_KEYS: OnceLock<RwLock<HashMap<String, Arc<DecodingKey>>>> = OnceLock::new();
+
 async fn verify_access_token(token: &str) -> Option<Claims> {
     let kid = decode_header(token).ok()?.kid?;
     let jwks = fetch_jwks().await?;
-    let key = jwks.keys.iter().find(|k| k.kid == kid)?;
-    let dk = DecodingKey::from_rsa_components(&key.n, &key.e).ok()?;
+    let cache = DECODE_KEYS.get_or_init(|| RwLock::new(HashMap::new()));
+
+    let dk = {
+        let read = cache.read().await;
+        if let Some(dk) = read.get(&kid) {
+            dk.clone()
+        } else {
+            drop(read);
+            let key = jwks.keys.iter().find(|k| k.kid == kid)?;
+            let dk = Arc::new(DecodingKey::from_rsa_components(&key.n, &key.e).ok()?);
+            let mut write = cache.write().await;
+            write.entry(kid).or_insert_with(|| dk.clone());
+            dk
+        }
+    };
+
     let data = decode::<Claims>(token, &dk, &Validation::new(Algorithm::RS256)).ok()?;
     Some(data.claims)
 }

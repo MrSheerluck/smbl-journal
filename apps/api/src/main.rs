@@ -11,6 +11,7 @@ use axum::{
     routing::{get, post},
 };
 use state::AppState;
+use tower_http::compression::CompressionLayer;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 
@@ -44,6 +45,7 @@ async fn main() {
         .merge(entries::routes())
         .with_state(AppState { conn: db.map(std::sync::Arc::new) })
         .layer(cors_layer())
+        .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http());
 
     let port: u16 = std::env::var("PORT")

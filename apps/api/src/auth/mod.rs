@@ -129,15 +129,27 @@ fn pending_token_from_error(err: &workos::Error) -> Option<String> {
 
 static JWKS: OnceLock<RwLock<Option<(Jwks, Instant)>>> = OnceLock::new();
 
+static HTTP: OnceLock<reqwest::Client> = OnceLock::new();
+
+fn http() -> &'static reqwest::Client {
+    HTTP.get_or_init(|| {
+        reqwest::Client::builder()
+            .timeout(Duration::from_secs(5))
+            .connect_timeout(Duration::from_secs(3))
+            .build()
+            .expect("failed to build http client")
+    })
+}
+
 async fn fetch_jwks() -> Option<Jwks> {
     let slot = JWKS.get_or_init(|| RwLock::new(None));
 
     {
         let cached = slot.read().await;
-        if let Some((jwks, at)) = cached.as_ref() {
-            if at.elapsed() < Duration::from_secs(6 * 60 * 60) {
-                return Some(jwks.clone());
-            }
+        if let Some((jwks, at)) = cached.as_ref()
+            && at.elapsed() < Duration::from_secs(6 * 60 * 60)
+        {
+            return Some(jwks.clone());
         }
     }
 
@@ -145,7 +157,7 @@ async fn fetch_jwks() -> Option<Jwks> {
         "https://api.workos.com/sso/jwks/{}",
         env("WORKOS_CLIENT_ID")
     );
-    let jwks: Jwks = reqwest::get(&url).await.ok()?.json().await.ok()?;
+    let jwks: Jwks = http().get(&url).send().await.ok()?.json().await.ok()?;
     let mut w = slot.write().await;
     *w = Some((jwks.clone(), Instant::now()));
     Some(jwks)
