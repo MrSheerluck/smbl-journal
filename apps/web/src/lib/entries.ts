@@ -17,6 +17,11 @@ export class AuthError extends Error {
 
 const entryCache = new Map<string, string>();
 
+// Guard against duplicate concurrent range fetches and avoid re-fetching a
+// range that has already been pulled into the cache.
+const inFlightRanges = new Set<string>();
+const fetchedRanges = new Set<string>();
+
 function pad2(n: number): string {
 	return String(n).padStart(2, '0');
 }
@@ -84,17 +89,32 @@ function monthBounds(year: number, monthIndex: number): { start: string; end: st
 export async function prefetchMonthRange(start: string, end: string): Promise<void> {
 	const key = getVaultKey();
 	if (!key) return;
-	const res = await fetch(`/api/entries?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
-	if (!res.ok) return;
-	const entries = (await res.json()) as Entry[];
-	for (const e of entries) {
-		try {
-			const text = await decryptText(key, base64ToBytes(e.body_iv), base64ToBytes(e.body_ciphertext));
-			entryCache.set(e.entry_date, text);
-		} catch {
-			// A corrupt row must not abort prefetching the rest of the month.
+	const rangeKey = `${start}|${end}`;
+	if (inFlightRanges.has(rangeKey) || fetchedRanges.has(rangeKey)) return;
+	inFlightRanges.add(rangeKey);
+	try {
+		const res = await fetch(`/api/entries?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+		if (!res.ok) return;
+		const entries = (await res.json()) as Entry[];
+		for (const e of entries) {
+			try {
+				const text = await decryptText(key, base64ToBytes(e.body_iv), base64ToBytes(e.body_ciphertext));
+				entryCache.set(e.entry_date, text);
+			} catch {
+				// A corrupt row must not abort prefetching the rest of the month.
+			}
 		}
+		fetchedRanges.add(rangeKey);
+	} finally {
+		inFlightRanges.delete(rangeKey);
 	}
+}
+
+export function prefetchMonth(date: string): Promise<void> {
+	const parts = date.split('-').map(Number);
+	if (parts.length !== 3 || parts.some(Number.isNaN)) return Promise.resolve();
+	const bounds = monthBounds(parts[0], parts[1] - 1);
+	return prefetchMonthRange(bounds.start, bounds.end);
 }
 
 export async function prefetchSurroundingMonths(): Promise<void> {

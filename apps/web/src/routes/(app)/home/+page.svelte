@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { vaultStatus, unlockVault, clearVault, resetVault } from '$lib/vault';
-	import { todayLocal, loadEntry, saveEntry, prefetchSurroundingMonths, AuthError } from '$lib/entries';
+	import { todayLocal, loadEntry, saveEntry, prefetchMonth, AuthError } from '$lib/entries';
 	import RichTextEditor from '$lib/components/editor/RichTextEditor.svelte';
 	import ReadOnlyView from '$lib/components/editor/ReadOnlyView.svelte';
 
@@ -48,8 +48,12 @@
 
 	$effect(() => {
 		if ($vaultStatus !== 'unlocked') return;
-		prefetchSurroundingMonths().catch(() => {});
 		const d = selectedDate();
+		// Warm the viewed month's cache so surrounding days open instantly. The
+		// calendar already prefetches the visible month; this covers direct links
+		// to an arbitrary date and re-warms after unlock. loadEntry returns from
+		// cache when available, so repeat visits are instant.
+		prefetchMonth(d).catch(() => {});
 		loadEntry(d)
 			.then((existing) => {
 				body = existing ?? '';

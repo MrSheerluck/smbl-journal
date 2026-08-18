@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { todayLocal } from '$lib/entries';
+	import { todayLocal, prefetchMonth } from '$lib/entries';
 
 	const MONTHS = [
 		'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -47,6 +47,14 @@
 				entryDates = new Set(list.map((e) => e.entry_date));
 			})
 			.catch(() => {});
+	});
+
+	// Whenever the visible month changes, prefetch its entries so that clicking
+	// a day resolves instantly instead of paying a full network round trip.
+	$effect(() => {
+		const [y, m] = [viewYear, viewMonth];
+		if (m < 0 || m > 11) return;
+		prefetchMonth(toStr(y, m, 1)).catch(() => {});
 	});
 
 	function daysInMonth(y: number, m: number): number {
