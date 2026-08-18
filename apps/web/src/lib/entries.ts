@@ -8,6 +8,13 @@ export interface Entry {
 	body_iv: string;
 }
 
+export class AuthError extends Error {
+	constructor() {
+		super('Authentication expired');
+		this.name = 'AuthError';
+	}
+}
+
 const entryCache = new Map<string, string>();
 
 function pad2(n: number): string {
@@ -37,6 +44,7 @@ export async function saveEntry(date: string, body: string): Promise<void> {
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload)
 	});
+	if (res.status === 401) throw new AuthError();
 	if (!res.ok) throw new Error('Failed to save entry');
 	entryCache.set(date, body);
 }

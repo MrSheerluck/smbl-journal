@@ -19,9 +19,10 @@ export async function POST({ request, cookies }: RequestEvent) {
 	const token = cookies.get(SESSION_COOKIE);
 	if (!token) return json({ error: 'no session' }, { status: 401 });
 	const body = await request.json();
-	const ok = await saveEntry(token, body, cookies);
-	if (!ok) return json({ error: 'failed to save entry' }, { status: 500 });
-	return json({ ok: true });
+	const result = await saveEntry(token, body, cookies);
+	if ('ok' in result && result.ok) return json({ ok: true });
+	const isAuthError = !('ok' in result) && result.status === 401;
+	return json({ error: 'failed to save entry' }, { status: isAuthError ? 401 : 500 });
 }
 
 export async function DELETE({ cookies, url }: RequestEvent) {

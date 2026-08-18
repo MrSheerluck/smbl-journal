@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { vaultStatus, unlockVault, clearVault, resetVault } from '$lib/vault';
-	import { todayLocal, loadEntry, saveEntry, prefetchSurroundingMonths } from '$lib/entries';
+	import { todayLocal, loadEntry, saveEntry, prefetchSurroundingMonths, AuthError } from '$lib/entries';
 	import RichTextEditor from '$lib/components/editor/RichTextEditor.svelte';
 	import ReadOnlyView from '$lib/components/editor/ReadOnlyView.svelte';
 
@@ -104,7 +105,12 @@
 			await saveEntry(date, body);
 			saveStatus = 'saved';
 			retryAttempt = 0;
-		} catch {
+		} catch (err) {
+			if (err instanceof AuthError) {
+				clearVault();
+				await goto('/login');
+				return;
+			}
 			saveDirty = true;
 			saveStatus = 'idle';
 			error = 'Autosave failed. Retrying...';

@@ -7,6 +7,7 @@ export const RUST_ORIGIN = env.API_URL || 'http://localhost:8080';
 export interface ApiError {
 	error: string;
 	message: string;
+	status?: number;
 }
 
 interface RequestOptions {
@@ -78,10 +79,12 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T | 
 					token = refreshed;
 					continue;
 				}
-				return (data ?? DEFAULT_ERROR) as ApiError;
+				const err = (data ?? DEFAULT_ERROR) as ApiError;
+				return { ...err, status: 401 } as ApiError;
 			}
 			if (!res.ok) {
-				return (data ?? DEFAULT_ERROR) as ApiError;
+				const err = (data ?? DEFAULT_ERROR) as ApiError;
+				return { ...err, status: res.status } as ApiError;
 			}
 			return data as T;
 		} catch {

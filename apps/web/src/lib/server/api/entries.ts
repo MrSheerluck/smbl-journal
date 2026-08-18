@@ -1,5 +1,5 @@
 import type { Cookies } from '@sveltejs/kit';
-import { getJson, postJson, deleteRequest } from './rust';
+import { getJson, postJson, deleteRequest, type ApiError } from './rust';
 
 export interface Entry {
 	id: string;
@@ -23,9 +23,8 @@ export async function getEntry(token: string, date: string, cookies?: Cookies): 
 	return 'body_ciphertext' in result ? result : null;
 }
 
-export async function saveEntry(token: string, payload: Entry, cookies?: Cookies): Promise<boolean> {
-	const result = await postJson<{ ok: boolean }>('/entries', payload, token, cookies);
-	return 'ok' in result && result.ok === true;
+export async function saveEntry(token: string, payload: Entry, cookies?: Cookies): Promise<{ ok: boolean } | ApiError> {
+	return postJson<{ ok: boolean }>('/entries', payload, token, cookies);
 }
 
 export async function deleteEntry(token: string, date: string, cookies?: Cookies): Promise<boolean> {
